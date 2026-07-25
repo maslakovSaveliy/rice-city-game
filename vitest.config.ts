@@ -41,6 +41,9 @@ export default defineConfig({
         // Конфигурация и обвязка без собственной логики: покрывать нечего.
         "src/lib/fonts.ts",
         "src/lib/env.ts",
+        "src/server/db/client.ts",
+        "src/server/db/schema.ts",
+        "src/server/db/testing.ts",
       ],
       thresholds: {
         lines: 70,

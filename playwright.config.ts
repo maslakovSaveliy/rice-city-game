@@ -35,9 +35,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm build && pnpm start",
+    // Отдельный файл базы, чтобы прогон не затирал данные разработки.
+    command: "mkdir -p data && pnpm build && pnpm db:migrate && pnpm start",
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    env: { DATABASE_URL: "file:./data/e2e.db" },
   },
 });

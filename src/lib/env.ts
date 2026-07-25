@@ -7,7 +7,12 @@ import { z } from "zod";
  */
 const serverEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  DATABASE_PATH: z.string().min(1).default("./data/app.db"),
+  /** Строка подключения libsql. Для локального файла нужен префикс `file:`. */
+  DATABASE_URL: z
+    .string()
+    .min(1)
+    .startsWith("file:", "Локальная база указывается как file:./data/app.db")
+    .default("file:./data/app.db"),
   /** Публичный адрес игры. Нужен для CSP, canonical и текста правил акции. */
   SITE_URL: z.url().default("http://localhost:3000"),
 });
