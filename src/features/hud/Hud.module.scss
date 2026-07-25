@@ -1,4 +1,7 @@
 .root {
+  /* Слой выше холста с частицами: зёрна пролетают под панелью. */
+  position: relative;
+  z-index: var(--rc-z-hud);
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: var(--rc-space-3) var(--rc-space-4);

@@ -1,0 +1,12 @@
+.root {
+  position: absolute;
+  inset: 0;
+  z-index: var(--rc-z-canvas);
+  /* Холст только рисует: все касания достаются Рисинке под ним. */
+  pointer-events: none;
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+}

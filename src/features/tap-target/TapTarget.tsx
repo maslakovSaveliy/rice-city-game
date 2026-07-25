@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { type PointerEvent, useCallback, useEffect, useRef } from "react";
+import { burstAt } from "@/features/particles/particles";
 import { HEAT_MAX } from "@/game/constants";
 import { gameStore, useGameStore } from "@/store/use-game-store";
 import styles from "./TapTarget.module.scss";
@@ -37,14 +38,17 @@ export function TapTarget() {
       }
       event.preventDefault();
 
-      const before = gameStore.getState().local?.taps ?? 0;
+      const before = gameStore.getState().local;
       tap();
-      const registered = (gameStore.getState().local?.taps ?? 0) > before;
+      const after = gameStore.getState().local;
 
-      if (registered) {
-        squash(mascotRef.current);
-        navigator.vibrate?.(HAPTIC_MS);
+      if (after === null || before === null || after.taps === before.taps) {
+        return;
       }
+
+      squash(mascotRef.current);
+      navigator.vibrate?.(HAPTIC_MS);
+      burstAt(event.clientX, event.clientY, after.grains - before.grains, performance.now());
     },
     [tap],
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { renderParticles } from "@/features/particles/particles";
 import { SYNC_INTERVAL_MS, TICK_INTERVAL_MS } from "@/game/constants";
 import { gameStore } from "@/store/use-game-store";
 
@@ -24,6 +25,9 @@ export function useGameRuntime(): void {
 
     const loop = (timestamp: number) => {
       frame = requestAnimationFrame(loop);
+
+      // Частицы рисуются каждый кадр: шестьдесят герц здесь и есть смысл.
+      renderParticles(timestamp);
 
       if (timestamp - lastTick >= TICK_INTERVAL_MS) {
         lastTick = timestamp;

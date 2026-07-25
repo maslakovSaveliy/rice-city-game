@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Hud } from "@/features/hud/Hud";
+import { ParticleCanvas } from "@/features/particles/ParticleCanvas";
 import { TapTarget } from "@/features/tap-target/TapTarget";
 import { UpgradeList } from "@/features/upgrades/UpgradeList";
 import { useGameStore } from "@/store/use-game-store";
@@ -14,6 +15,8 @@ export function PlayScreen() {
 
   return (
     <main className={styles.play}>
+      {/* Холст растянут на весь экран, чтобы зёрна улетали за пределы поля. */}
+      <ParticleCanvas />
       <Hud />
 
       <div className={styles.playField}>
