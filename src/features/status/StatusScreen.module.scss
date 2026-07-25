@@ -1,0 +1,95 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  color: var(--rc-rice);
+  background: var(--rc-play-bg);
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--rc-space-3);
+  align-items: center;
+  justify-content: center;
+  padding: var(--rc-space-6) var(--rc-space-4);
+  padding-bottom: calc(var(--rc-space-6) + var(--rc-banner-offset));
+  text-align: center;
+}
+
+.mascot,
+.mascotDimmed {
+  width: min(44vw, 180px);
+  height: auto;
+  background: var(--rc-rice);
+  border-radius: 28%;
+  box-shadow: 0 18px 26px rgb(20 8 4 / 40%);
+}
+
+/**
+ * У бренда одна Рисинка, «грустной» версии не существует и создавать её нельзя.
+ * При неприятностях она просто уходит в тень — этого достаточно, чтобы экран
+ * не выглядел праздничным.
+ */
+.mascotDimmed {
+  filter: grayscale(0.35) brightness(0.82);
+  opacity: 0.75;
+}
+
+.title {
+  margin-top: var(--rc-space-3);
+  font-size: var(--rc-text-xl);
+}
+
+.description {
+  max-width: 30ch;
+  color: color-mix(in srgb, var(--rc-rice) 74%, transparent);
+}
+
+.action {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rc-space-3);
+  align-items: stretch;
+  width: min(100%, 300px);
+  margin-top: var(--rc-space-4);
+}
+
+/** Ссылка, выглядящая как основная кнопка. Нужна там, где действие — переход. */
+.linkAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: var(--rc-space-4) var(--rc-space-6);
+  font-family: var(--rc-font-display);
+  font-size: var(--rc-text-lg);
+  font-weight: 700;
+  color: var(--rc-accent-fg);
+  text-align: center;
+  text-decoration: none;
+  background: var(--rc-orange);
+  border-radius: var(--rc-radius-pill);
+  box-shadow: var(--rc-shadow-md);
+
+  &:active {
+    transform: translateY(1px) scale(0.98);
+    background: var(--rc-orange-deep);
+  }
+}
+
+.reference {
+  margin-top: var(--rc-space-4);
+  font-family: ui-monospace, monospace;
+  font-size: var(--rc-text-xs);
+  color: color-mix(in srgb, var(--rc-rice) 42%, transparent);
+}
+
+.requisites {
+  padding: var(--rc-space-4);
+  padding-bottom: calc(var(--rc-space-4) + env(safe-area-inset-bottom));
+  font-size: var(--rc-text-xs);
+  color: color-mix(in srgb, var(--rc-rice) 45%, transparent);
+  text-align: center;
+}

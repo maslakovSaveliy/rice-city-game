@@ -86,6 +86,10 @@ export function createHttpSessionApi(fetchImpl: typeof fetch = fetch): SessionAp
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(action),
+        // Без `keepalive` браузер обрывает запрос при уходе со страницы, и
+        // последняя пачка тапов, отправляемая на `pagehide`, теряется.
+        // Ограничение в 64 КБ на тело нам не мешает: оно здесь крошечное.
+        keepalive: true,
       }),
   };
 }

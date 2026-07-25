@@ -37,7 +37,10 @@ export default defineConfig({
       exclude: [
         "src/**/*.test.{ts,tsx}",
         "src/**/*.d.ts",
-        "src/app/**/layout.tsx",
+        // Границы фреймворка: маршруты, макеты, обработчики ошибок и API.
+        // Логики в них нет, а проверяются они end-to-end в Playwright —
+        // юнит-тест здесь мерил бы моки Next, а не поведение игры.
+        "src/app/**",
         // Конфигурация и обвязка без собственной логики: покрывать нечего.
         "src/lib/fonts.ts",
         "src/lib/env.ts",

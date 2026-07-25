@@ -17,6 +17,16 @@ async function tapMascot(page: Page, times: number): Promise<void> {
   }
 }
 
+/** Ждёт ближайшую успешную отправку тапов на сервер. */
+function waitForSync(page: Page): Promise<unknown> {
+  return page.waitForResponse(
+    (response) =>
+      response.url().includes("/api/session") &&
+      response.request().method() === "POST" &&
+      response.ok(),
+  );
+}
+
 function grainsOf(page: Page): Promise<number> {
   return page
     .locator('[class*="GrainCounter"] [class*="value"]')
@@ -47,11 +57,13 @@ test("тапы копят зёрна и поднимают скидку", async 
 test("прогресс живёт на сервере и переживает перезагрузку", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Играть" }).tap();
-  await tapMascot(page, 20);
 
+  // Ждём НАСТОЯЩИЙ ответ сервера, а не фиксированную паузу: с паузой тест
+  // плавает, потому что окно синхронизации может не успеть закрыться.
+  const synced = waitForSync(page);
+  await tapMascot(page, 20);
   const before = await grainsOf(page);
-  // Ждём окно синхронизации, чтобы тапы дошли до сервера.
-  await page.waitForTimeout(2_500);
+  await synced;
 
   await page.reload();
 
@@ -81,8 +93,10 @@ test("улучшение недоступно, пока не хватает зё
 test("результат и фиксация скидки", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Играть" }).tap();
+
+  const synced = waitForSync(page);
   await tapMascot(page, 25);
-  await page.waitForTimeout(2_500);
+  await synced;
 
   await page.getByRole("button", { name: "Завершить" }).tap();
 

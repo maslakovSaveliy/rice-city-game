@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
+import { StatusScreen } from "@/features/status/StatusScreen";
 import { useGameRuntime } from "@/hooks/use-game-runtime";
 import { useGameStore } from "@/store/use-game-store";
 import { FixedScreen } from "./FixedScreen";
@@ -20,39 +22,61 @@ export function GameScreen() {
 
   const status = useGameStore((state) => state.status);
   const phase = useGameStore((state) => state.local?.phase ?? null);
-  const error = useGameStore((state) => state.error);
+  const init = useGameStore((state) => state.init);
 
   if (status === "lost") {
     return (
-      <Notice title="Игра потерялась">{error ?? "Обновите страницу, чтобы продолжить."}</Notice>
+      <StatusScreen
+        action={
+          <Button onClick={() => window.location.reload()} size="lg">
+            Обновить страницу
+          </Button>
+        }
+        description="Игровая сессия больше не действует. Обновите страницу, чтобы начать заново."
+        title="Игра потерялась"
+        tone="trouble"
+      />
+    );
+  }
+
+  // Связи нет и загрузиться не удалось: играть не во что, нужен повтор.
+  if (phase === null && status === "offline") {
+    return (
+      <StatusScreen
+        action={
+          <Button onClick={() => void init()} size="lg">
+            Повторить
+          </Button>
+        }
+        description="Игра не смогла загрузиться. Проверьте подключение и попробуйте ещё раз."
+        title="Нет связи"
+        tone="trouble"
+      />
     );
   }
 
   if (phase === null) {
     return (
-      <Notice title="Готовим рис">
-        {status === "offline" ? "Нет связи. Проверьте интернет." : "Секунду…"}
-      </Notice>
+      <div className={styles.notice}>
+        <p className={styles.noticeText}>Готовим рис…</p>
+      </div>
     );
   }
 
   return (
     // Ключ по фазе перезапускает анимацию появления при каждой смене экрана.
     <div className={styles.stage} key={phase}>
-      {status === "offline" && <p className={styles.offline}>Нет связи — прогресс сохранится</p>}
+      {/* `<output>` вместо `<p role="status">`: живая область с той же
+          семантикой, но нативным элементом. */}
+      {status === "offline" && (
+        <output className={styles.offline}>
+          Нет связи — тапы сохранятся и уйдут, когда интернет вернётся
+        </output>
+      )}
       {phase === "idle" && <MenuScreen />}
       {phase === "playing" && <PlayScreen />}
       {phase === "result" && <ResultScreen />}
       {phase === "fixed" && <FixedScreen />}
-    </div>
-  );
-}
-
-function Notice({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className={styles.notice}>
-      <h1 className={styles.noticeTitle}>{title}</h1>
-      <p className={styles.noticeText}>{children}</p>
     </div>
   );
 }

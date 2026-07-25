@@ -61,12 +61,28 @@ export function useGameRuntime(): void {
       void gameStore.getState().flush();
     };
 
+    // Браузер сообщает о пропаже сети раньше, чем упадёт первый запрос, —
+    // состояние на экране меняется сразу, а не через две секунды.
+    const onOffline = () => gameStore.getState().setConnection(false);
+    const onOnline = () => {
+      gameStore.getState().setConnection(true);
+      void gameStore.getState().flush();
+    };
+
     document.addEventListener("visibilitychange", onVisibilityChange);
     window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("offline", onOffline);
+    window.addEventListener("online", onOnline);
+
+    if (!navigator.onLine) {
+      onOffline();
+    }
 
     return () => {
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("offline", onOffline);
+      window.removeEventListener("online", onOnline);
     };
   }, []);
 }

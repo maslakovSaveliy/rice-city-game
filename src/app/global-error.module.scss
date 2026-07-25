@@ -1,0 +1,41 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rc-space-3);
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--rc-space-6) var(--rc-space-4);
+  color: var(--rc-rice);
+  text-align: center;
+  background: var(--rc-brown);
+}
+
+.title {
+  font-family: var(--rc-font-display);
+  font-size: var(--rc-text-xl);
+}
+
+.text {
+  max-width: 30ch;
+  color: color-mix(in srgb, var(--rc-rice) 74%, transparent);
+}
+
+.button {
+  min-height: 56px;
+  padding: var(--rc-space-4) var(--rc-space-6);
+  margin-top: var(--rc-space-4);
+  font-family: var(--rc-font-display);
+  font-size: var(--rc-text-lg);
+  font-weight: 700;
+  color: var(--rc-accent-fg);
+  background: var(--rc-orange);
+  border-radius: var(--rc-radius-pill);
+}
+
+.reference {
+  margin-top: var(--rc-space-4);
+  font-family: ui-monospace, monospace;
+  font-size: var(--rc-text-xs);
+  color: color-mix(in srgb, var(--rc-rice) 42%, transparent);
+}

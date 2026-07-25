@@ -263,6 +263,46 @@ describe("сервер просит подождать", () => {
   });
 });
 
+describe("события сети", () => {
+  it("пропажа сети переводит в офлайн сразу, не дожидаясь падения запроса", async () => {
+    await started();
+    store.getState().setConnection(false);
+
+    expect(store.getState().status).toBe("offline");
+    expect(store.getState().error).toBe("Нет связи с сервером");
+  });
+
+  it("возврат сети снимает паузу отправки", async () => {
+    await started();
+    store.getState().setConnection(false);
+    store.setState({ throttledUntil: Number.MAX_SAFE_INTEGER });
+
+    store.getState().setConnection(true);
+    expect(store.getState().throttledUntil).toBe(0);
+  });
+
+  it("в офлайне тапы продолжают считаться локально", async () => {
+    await started();
+    store.getState().setConnection(false);
+
+    store.getState().tap();
+    store.getState().tap();
+
+    expect(store.getState().local?.taps).toBe(2);
+    expect(store.getState().pendingTaps).toBe(2);
+  });
+
+  it("потерянную сессию события сети не воскрешают", async () => {
+    await started();
+    server.fail(new SessionApiError(404, "Сессия не найдена."));
+    await store.getState().flush();
+    expect(store.getState().status).toBe("lost");
+
+    store.getState().setConnection(true);
+    expect(store.getState().status).toBe("lost");
+  });
+});
+
 describe("потеря сессии", () => {
   it("переводит стор в состояние «нужно обновить страницу»", async () => {
     await started();

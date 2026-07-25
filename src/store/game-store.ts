@@ -45,6 +45,8 @@ export interface GameStoreState {
 
   init: () => Promise<void>;
   start: () => Promise<void>;
+  /** Реакция на события `online`/`offline` браузера. */
+  setConnection: (online: boolean) => void;
   tap: () => void;
   tick: () => void;
   resume: () => void;
@@ -139,6 +141,25 @@ export function createGameStore({ api, now }: GameStoreDeps) {
           adopt(await api.act({ type: "start" }));
         } catch (cause) {
           handleFailure(cause);
+        }
+      },
+
+      /**
+       * Браузер сообщает о пропаже сети раньше, чем упадёт первый запрос.
+       * Пользоваться этим стоит только чтобы показать состояние: возврат в
+       * «ready» подтверждается настоящим ответом сервера, а не событием.
+       */
+      setConnection: (online) => {
+        const { status } = get();
+        if (status === "lost") {
+          return;
+        }
+        if (!online) {
+          set({ status: "offline", error: "Нет связи с сервером" });
+          return;
+        }
+        if (status === "offline") {
+          set({ throttledUntil: 0 });
         }
       },
 

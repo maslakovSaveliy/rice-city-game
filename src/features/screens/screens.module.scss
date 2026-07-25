@@ -11,7 +11,14 @@
   animation: fade var(--rc-dur-base) var(--rc-ease-out) both;
 }
 
-.notice,
+.notice {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  color: var(--rc-rice);
+  background: var(--rc-play-bg);
+}
+
 .menu,
 .result,
 .fixed {
@@ -29,22 +36,13 @@
   text-align: center;
 }
 
-.notice {
-  min-height: 100dvh;
-  background: var(--rc-play-bg);
-}
-
-.noticeTitle {
-  font-size: var(--rc-text-xl);
-  color: var(--rc-rice);
-}
-
 .noticeText {
   max-width: 28ch;
   color: color-mix(in srgb, var(--rc-rice) 68%, transparent);
 }
 
 .offline {
+  display: block;
   padding: var(--rc-space-2) var(--rc-space-4);
   font-size: var(--rc-text-xs);
   color: var(--rc-brown);
