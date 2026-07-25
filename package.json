@@ -21,7 +21,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "verify": "pnpm check && pnpm typecheck && pnpm test && pnpm build",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install || exit 0"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",

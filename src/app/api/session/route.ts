@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { MAX_TAPS_PER_BATCH } from "@/game/constants";
 import { env } from "@/lib/env";
-import { db } from "@/server/db/client";
+import { db, ensureSchema } from "@/server/db/client";
 import { createRateLimiter } from "@/server/rate-limit";
 import { attachSessionCookie, SESSION_COOKIE } from "@/server/session-cookie";
 import { applyAction, createSession, readSession } from "@/server/session-service";
@@ -63,6 +63,8 @@ const creationLimiter = createRateLimiter({ limit: 600, windowMs: 60 * 60 * 1000
 const MAX_BODY_BYTES = 1024;
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  await ensureSchema();
+
   const now = Date.now();
   const store = await cookies();
   const existing = store.get(SESSION_COOKIE)?.value;
@@ -84,6 +86,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  await ensureSchema();
+
   const now = Date.now();
   const store = await cookies();
   const sessionId = store.get(SESSION_COOKIE)?.value;

@@ -30,6 +30,17 @@ const nextConfig: NextConfig = {
   sassOptions: {
     loadPaths: [path.join(import.meta.dirname, "src/styles")],
   },
+  /**
+   * Миграции кладутся внутрь функции.
+   *
+   * На своём сервере схему накатывает `pnpm db:migrate` перед стартом. На
+   * бессерверном хостинге такого шага нет вообще, и схему приходится
+   * поднимать в рантайме — а для этого папка с миграциями должна попасть
+   * в бандл функции, иначе `migrate()` не найдёт файлы.
+   */
+  outputFileTracingIncludes: {
+    "/api/session": ["./drizzle/**/*"],
+  },
   async headers() {
     return [
       {
