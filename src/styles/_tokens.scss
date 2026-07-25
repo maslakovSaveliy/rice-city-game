@@ -1,0 +1,93 @@
+/**
+ * Токены РИСсити.
+ *
+ * Палитра взята из бренд-руководства без округлений и «похожих» подборов.
+ * Кремовый `--rc-cream` снят с макетов брендбука и в официальной палитре
+ * не задокументирован — см. docs/BRAND-TOKENS.md, требует подтверждения.
+ *
+ * Брендбук прямо запрещает холодные тона, кислотные цвета и стерильный глянец.
+ * Поэтому здесь нет ни одного нейтрально-серого: все тени и полутона тёплые.
+ */
+
+:root {
+  /* Брендовые цвета */
+  --rc-orange: #ea6009;
+  --rc-terracotta: #95461e;
+  --rc-olive: #797049;
+  --rc-olive-dark: #49401f;
+  --rc-brown: #442219;
+  --rc-cream: #eae5da;
+
+  /* Производные оттенки. Смешиваются с брендовыми, свои hue не вводим. */
+  --rc-orange-bright: #ff7a24;
+  --rc-orange-deep: #c44f05;
+  --rc-cream-soft: #f4f0e7;
+  --rc-brown-deep: #2c150f;
+  --rc-rice: #fbf7ef;
+
+  /* Семантика */
+  --rc-bg: var(--rc-cream);
+  --rc-bg-elevated: var(--rc-cream-soft);
+  --rc-fg: var(--rc-brown);
+  --rc-fg-muted: color-mix(in srgb, var(--rc-brown) 62%, var(--rc-cream));
+  --rc-accent: var(--rc-orange);
+  --rc-accent-fg: var(--rc-rice);
+  --rc-border: color-mix(in srgb, var(--rc-brown) 16%, transparent);
+
+  /* Игровой экран живёт на тёплом тёмном фоне: так рисовые частицы читаются. */
+  --rc-play-bg: radial-gradient(120% 80% at 50% 0%, #5c4a22 0%, var(--rc-brown) 55%, var(--rc-brown-deep) 100%);
+
+  /* Типографика */
+  --rc-font-display: var(--font-display), "Trebuchet MS", system-ui, sans-serif;
+  --rc-font-body: var(--font-body), system-ui, -apple-system, sans-serif;
+  --rc-font-script: var(--font-script), cursive;
+
+  --rc-text-xs: 0.75rem;
+  --rc-text-sm: 0.875rem;
+  --rc-text-base: 1rem;
+  --rc-text-lg: 1.25rem;
+  --rc-text-xl: 1.5rem;
+  --rc-text-2xl: 2rem;
+  --rc-text-3xl: 2.75rem;
+  --rc-text-hero: clamp(3rem, 18vw, 6rem);
+
+  /* Шаг сетки 4px */
+  --rc-space-1: 0.25rem;
+  --rc-space-2: 0.5rem;
+  --rc-space-3: 0.75rem;
+  --rc-space-4: 1rem;
+  --rc-space-5: 1.5rem;
+  --rc-space-6: 2rem;
+  --rc-space-7: 3rem;
+  --rc-space-8: 4rem;
+
+  --rc-radius-sm: 0.5rem;
+  --rc-radius-md: 0.875rem;
+  --rc-radius-lg: 1.25rem;
+  --rc-radius-xl: 2rem;
+  --rc-radius-pill: 999rem;
+
+  /* Тени тонированы коричневым — нейтрально-серая тень выглядит грязной
+     поверх тёплого фона. */
+  --rc-shadow-sm: 0 1px 2px rgb(68 34 25 / 12%);
+  --rc-shadow-md: 0 4px 12px -2px rgb(68 34 25 / 18%);
+  --rc-shadow-lg: 0 12px 32px -8px rgb(68 34 25 / 28%);
+  --rc-shadow-press: inset 0 2px 6px rgb(68 34 25 / 24%);
+
+  /* Движение */
+  --rc-dur-instant: 90ms;
+  --rc-dur-fast: 140ms;
+  --rc-dur-base: 220ms;
+  --rc-dur-slow: 340ms;
+  --rc-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --rc-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --rc-ease-overshoot: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Минимальная цель касания. Ниже опускаться нельзя даже ради композиции. */
+  --rc-tap-min: 44px;
+
+  --rc-z-canvas: 1;
+  --rc-z-hud: 10;
+  --rc-z-sheet: 100;
+  --rc-z-banner: 200;
+}

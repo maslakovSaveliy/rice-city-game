@@ -1,0 +1,38 @@
+# Быстрый круг на коммите, полный прогон на пуше.
+# Смысл разделения: коммит должен оставаться дешёвым, иначе его начинают
+# обходить через --no-verify. Сломанный код при этом всё равно не уезжает
+# в удалёнку — pre-push прогоняет всё.
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: format-and-lint
+      glob: "*.{ts,tsx,js,jsx,json,jsonc,css,scss}"
+      run: pnpm biome check --write --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+
+    - name: typecheck
+      run: pnpm tsc --noEmit
+
+    - name: unit-related
+      glob: "*.{ts,tsx}"
+      run: pnpm vitest related --run --passWithNoTests {staged_files}
+
+pre-push:
+  parallel: false
+  jobs:
+    - name: test
+      run: pnpm vitest run --coverage
+
+    - name: build
+      run: pnpm build
+
+    - name: e2e
+      run: pnpm playwright test
+
+commit-msg:
+  jobs:
+    - name: conventional-commit
+      run: |
+        head -1 {1} | grep -qE '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?: .{1,72}$' \
+          || { echo "Формат: <type>(<scope>): <описание>. Типы: feat fix docs style refactor perf test build ci chore revert"; exit 1; }

@@ -1,0 +1,44 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# testing
+/coverage
+/playwright-report
+/test-results
+/blob-report
+/.playwright
+
+# next.js
+/.next/
+/out/
+/build
+
+# database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+/data
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files
+.env*
+!.env.example
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# agent scratch
+/.planning

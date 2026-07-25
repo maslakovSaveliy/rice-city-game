@@ -1,0 +1,127 @@
+@use "tokens";
+
+/**
+ * Правила тача здесь не косметика, а требование продукта: играют дети на
+ * телефонах, и любой случайный зум или выделение текста ломает сессию.
+ *
+ * iOS Safari игнорирует `user-scalable=no` в мета-вьюпорте начиная с iOS 10,
+ * поэтому двойной тап-зум гасится через `touch-action`, а pinch — обработчиком
+ * `gesturestart` в клиентском коде.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+body {
+  min-height: 100dvh;
+  margin: 0;
+  background: var(--rc-bg);
+  color: var(--rc-fg);
+  font-family: var(--rc-font-body);
+  font-size: var(--rc-text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--rc-font-display);
+  font-weight: 700;
+  line-height: 1.1;
+  text-wrap: balance;
+  letter-spacing: -0.01em;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+img,
+picture,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+
+a {
+  color: var(--rc-terracotta);
+  text-underline-offset: 0.2em;
+}
+
+/** Всё, что относится к игровому полю: ни выделения, ни контекстного меню,
+    ни собственной прокрутки. */
+.rc-no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.rc-tap-surface {
+  @extend .rc-no-select;
+
+  touch-action: none;
+}
+
+/** Видим только для скринридера. */
+.rc-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:where(a, button, [tabindex]):focus-visible {
+  outline: 3px solid var(--rc-orange);
+  outline-offset: 3px;
+  border-radius: var(--rc-radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
