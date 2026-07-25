@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { type PointerEvent, useCallback, useEffect, useRef } from "react";
+import { type PointerEvent, useCallback, useEffect, useRef, useState } from "react";
 import { soundPlayer } from "@/features/audio/sound";
 import { burstAt } from "@/features/particles/particles";
 import { HEAT_MAX } from "@/game/constants";
@@ -29,6 +29,9 @@ const MASCOT_ALT: Record<MascotLevel, string> = {
   3: "Рисинка на троне",
 };
 
+/** Куда поехал уровень. `null` — первый рендер, анимировать нечего. */
+type LevelChange = "up" | "down" | null;
+
 /**
  * На сколько «+N» поднимается над верхней кромкой подложки.
  *
@@ -53,9 +56,8 @@ export function TapTarget() {
   // Селекторы отдают примитивы, а не объекты: производные величины на объектах
   // ломают кеш снимка в zustand.
   const untouched = useGameStore((state) => (state.local?.taps ?? 0) === 0);
-  const level = useGameStore((state) =>
-    mascotLevelFor(discountFromGrains(state.local?.grains ?? 0)),
-  );
+
+  const { level, change, clearChange } = useMascotLevel();
 
   useEffect(() => {
     // iOS Safari игнорирует `user-scalable=no`, поэтому щипок гасится вручную.
@@ -120,7 +122,7 @@ export function TapTarget() {
           <Image
             alt={current === level ? MASCOT_ALT[current] : ""}
             aria-hidden={current !== level}
-            className={current === level ? `${styles.image} ${styles.imageActive}` : styles.image}
+            className={imageClass(current === level, change)}
             draggable={false}
             height={340}
             key={current}
@@ -131,8 +133,86 @@ export function TapTarget() {
           />
         ))}
       </div>
+
+      {/* Вспышка по контуру кнопки на повышении. Отдельный узел, потому что
+          `.mascot` занят сквошем через WAAPI: две анимации на одном
+          `transform` подрались бы за него на каждом тапе. */}
+      {change !== null && (
+        <span
+          aria-hidden="true"
+          className={change === "up" ? styles.burstUp : styles.burstDown}
+          onAnimationEnd={clearChange}
+        />
+      )}
     </button>
   );
+}
+
+/**
+ * Уровень, который видит гость, и направление его последней смены.
+ *
+ * Считается от текущего баланса — то есть ровно от той скидки, которая
+ * показана в панели. Купил улучшение, скидка просела — облик откатывается
+ * вместе с ней. Так гость видит цену решения, а не только его выгоду.
+ *
+ * Защёлки на максимум здесь намеренно нет. Клиент предсказывает тапы наперёд,
+ * и сверка с сервером может отнять несколько сотен зёрен, но между девятью и
+ * десятью процентами лежат десятки тысяч — на настоящих порогах такая правка
+ * границу не пересекает. Мигание ловилось только на искусственно заниженных
+ * порогах во время проверки.
+ */
+function useMascotLevel(): {
+  level: MascotLevel;
+  change: LevelChange;
+  clearChange: () => void;
+} {
+  const level = useGameStore((state) =>
+    mascotLevelFor(discountFromGrains(state.local?.grains ?? 0)),
+  );
+
+  const [change, setChange] = useState<LevelChange>(null);
+  const seen = useRef(level);
+
+  useEffect(() => {
+    if (seen.current === level) {
+      return;
+    }
+    // Первый рендер сюда не попадает: `seen` заводится текущим уровнем,
+    // поэтому загрузка страницы не проигрывает награду задним числом.
+    setChange(level > seen.current ? "up" : "down");
+    seen.current = level;
+  }, [level]);
+
+  const clearChange = useCallback(() => setChange(null), []);
+
+  return { level, change, clearChange };
+}
+
+/**
+ * Классы облика: активный слой на смене уровня получает свою анимацию.
+ *
+ * Повышение и понижение звучат по-разному намеренно. Вверх — с перелётом,
+ * это награда и её надо заметить. Вниз — короткое оседание без отскока:
+ * потеря не должна праздноваться.
+ */
+function imageClass(active: boolean, change: LevelChange): string {
+  // Собирается списком, а не ветками с шаблонными строками: при
+  // `noUncheckedIndexedAccess` обращение к модулю стилей даёт `string |
+  // undefined`, и `join` — единственный способ свести это к строке, ничего
+  // не утверждая про типы.
+  const parts = [styles.image];
+
+  if (active) {
+    parts.push(styles.imageActive);
+  }
+  if (active && change === "up") {
+    parts.push(styles.imageUp);
+  }
+  if (active && change === "down") {
+    parts.push(styles.imageDown);
+  }
+
+  return parts.join(" ");
 }
 
 /** Ободок вокруг Рисинки показывает набранный жар комбо. */

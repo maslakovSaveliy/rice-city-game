@@ -65,21 +65,22 @@
 }
 
 /**
- * Рисинка без подложки.
+ * Поверхность кнопки.
  *
- * Кремовая плитка была вынужденной: у прежнего PNG фон не был прозрачным и на
- * тёмном экране читался бы светлым квадратом. С прозрачными исходниками она
- * стала вредной вдвойне — сквозь них просвечивал уже чистый `--rc-rice`, и
- * персонаж окончательно превратился в иконку приложения на фоне.
- *
- * Опору теперь держит контактная тень на `.root::after`, зону тапа очерчивает
- * ореол жара.
+ * Глухая кремовая плитка ушла: с прозрачными PNG она превращала персонажа в
+ * иконку приложения. Но совсем без границ пропадало главное — что по Рисинке
+ * вообще надо нажимать. Форма и скругление остались прежними, только вместо
+ * заливки еле заметная подсветка с обводкой: кнопка читается, а персонаж
+ * стоит на тёмном поле, а не на плитке.
  */
 .mascot {
   position: relative;
   width: 100%;
   /* Высоту задаёт контейнер: все три облика вне потока. */
   aspect-ratio: 1;
+  background: color-mix(in srgb, var(--rc-rice) 5%, transparent);
+  border-radius: 28%;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--rc-rice) 20%, transparent);
   /* Сжатие идёт от нижней кромки: так вес читается как удар о стол. */
   transform-origin: 50% 92%;
   will-change: transform;
@@ -116,11 +117,99 @@
   opacity: 0;
   pointer-events: none;
   user-select: none;
+  /* Смена облика растёт от той же точки, что и сквош на тап. */
+  transform-origin: 50% 88%;
   transition: opacity var(--rc-dur-slow) var(--rc-ease-out);
 }
 
 .imageActive {
   opacity: 1;
+}
+
+/**
+ * Смена облика.
+ *
+ * Вверх — с перелётом и от нижней кромки: новый образ будто вырастает из
+ * той же точки, куда бьёт палец. Вниз — короткое оседание без отскока.
+ * Потеря не должна праздноваться, поэтому движение вдвое короче и тише.
+ */
+.imageUp {
+  animation: levelUp var(--rc-dur-slow) var(--rc-ease-overshoot) both;
+}
+
+.imageDown {
+  animation: levelDown var(--rc-dur-base) var(--rc-ease-out) both;
+}
+
+/**
+ * Вспышка по контуру кнопки. Повторяет её скругление, расходится наружу и
+ * гаснет — на повышении ярко-оранжевая, на понижении глухая и почти без
+ * разлёта.
+ */
+.burstUp,
+.burstDown {
+  position: absolute;
+  inset: 0;
+  border-radius: 28%;
+  pointer-events: none;
+}
+
+.burstUp {
+  box-shadow: 0 0 0 2px var(--rc-orange-bright);
+  animation: burstOut var(--rc-dur-slow) var(--rc-ease-out) both;
+}
+
+.burstDown {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rc-rice) 34%, transparent);
+  animation: burstIn var(--rc-dur-base) var(--rc-ease-out) both;
+}
+
+@keyframes levelUp {
+  from {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes levelDown {
+  from {
+    opacity: 0;
+    transform: scale(1.07);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes burstOut {
+  from {
+    opacity: 0.95;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.22);
+  }
+}
+
+@keyframes burstIn {
+  from {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1);
+  }
 }
 
 @keyframes breathe {
