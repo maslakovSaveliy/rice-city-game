@@ -76,6 +76,14 @@
   border-top: 1px solid var(--rc-border);
 }
 
+/* Пропорции держит сам файл: задаётся только ширина. */
+.logo {
+  display: block;
+  width: min(58vw, 260px);
+  height: auto;
+  margin: 0 auto var(--rc-space-5);
+}
+
 .nav {
   display: flex;
   flex-wrap: wrap;

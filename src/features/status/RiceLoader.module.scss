@@ -34,6 +34,12 @@ $hop-duration: 1040ms;
   animation: loaderIn var(--rc-dur-base) var(--rc-ease-out) 280ms both;
 }
 
+/* Пропорции держит сам файл: задаётся только ширина. */
+.mark {
+  width: 64px;
+  height: auto;
+}
+
 .pan {
   position: relative;
   display: flex;

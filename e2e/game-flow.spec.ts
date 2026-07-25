@@ -120,7 +120,8 @@ function grainsOf(page: Page): Promise<number> {
 test("меню открывается и предлагает играть", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("РИС");
+  // Логотип — картинка, имя заголовка приходит из её `alt`.
+  await expect(page.getByRole("heading", { level: 1 })).toHaveAccessibleName("РИСсити");
   await expect(page.getByRole("button", { name: "Играть" })).toBeVisible();
 });
 

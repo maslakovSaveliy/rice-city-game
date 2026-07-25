@@ -1,3 +1,4 @@
+import Image from "next/image";
 import styles from "./RiceLoader.module.scss";
 
 /**
@@ -21,6 +22,17 @@ interface RiceLoaderProps {
 export function RiceLoader({ label }: RiceLoaderProps) {
   return (
     <div className={styles.root}>
+      {/* Знак из официального набора: экран загрузки был единственным без
+          единого брендового элемента. Светлая версия — фон тёмный. */}
+      <Image
+        alt="РИСсити"
+        className={styles.mark}
+        height={128}
+        priority
+        src="/brand/logos/logo-mark-light-128.png"
+        width={128}
+      />
+
       {/* Ряд декоративен: смысл несёт подпись, и дублировать его для
           скринридера значит читать одно и то же дважды. */}
       <div aria-hidden="true" className={styles.pan}>

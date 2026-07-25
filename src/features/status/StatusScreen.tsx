@@ -33,6 +33,17 @@ export function StatusScreen({
   return (
     <div className={styles.root}>
       <main className={styles.content}>
+        {/* Знак, а не полный логотип: на тупиковом экране главное — заголовок
+            и действие, бренду достаточно опознавательного элемента. */}
+        <Image
+          alt="РИСсити"
+          className={styles.mark}
+          height={128}
+          priority
+          src="/brand/logos/logo-mark-light-128.png"
+          width={128}
+        />
+
         <Image
           alt=""
           className={tone === "trouble" ? styles.mascotDimmed : styles.mascot}

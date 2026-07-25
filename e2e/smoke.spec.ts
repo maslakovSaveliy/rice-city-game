@@ -8,7 +8,9 @@ import { expect, test } from "@playwright/test";
 test("главная открывается и отдаёт брендовый заголовок", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("РИСсити");
+  // Заголовок несёт официальный логотип, а не набранный текст, поэтому имя
+  // берётся из доступности — из `alt` картинки, а не из текстового узла.
+  await expect(page.getByRole("heading", { level: 1 })).toHaveAccessibleName("РИСсити");
   await expect(page).toHaveTitle(/РИСсити/);
 });
 

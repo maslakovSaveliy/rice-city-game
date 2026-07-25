@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import styles from "./LegalPage.module.scss";
 import {
@@ -55,6 +56,17 @@ export function LegalPage({ document }: { document: LegalDocument }) {
       </main>
 
       <footer className={styles.footer}>
+        {/* Логотип с подписью: юридические страницы — самое место для полной
+            версии. Тёмная — фон здесь кремовый. */}
+        <Image
+          alt="РИСсити"
+          className={styles.logo}
+          height={152}
+          sizes="(max-width: 480px) 58vw, 260px"
+          src="/brand/logos/logo-horizontal-tagline-dark-512.png"
+          width={512}
+        />
+
         <nav aria-label="Юридические документы" className={styles.nav}>
           {LEGAL_DOCUMENTS.filter((item) => item.slug !== document.slug).map((item) => (
             <Link className={styles.navLink} href={`/legal/${item.slug}`} key={item.slug}>

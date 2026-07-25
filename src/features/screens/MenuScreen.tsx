@@ -26,7 +26,15 @@ export function MenuScreen() {
       {/* Строка «Семейный ГастроДом» убрана: на узких экранах она вставала
           впритык к логотипу и отнимала высоту у главного действия. */}
       <h1 className={styles.wordmark}>
-        РИС<span className={styles.wordmarkAccent}>сити</span>
+        <Image
+          alt="РИСсити"
+          className={styles.wordmarkImage}
+          height={79}
+          priority
+          sizes="(max-width: 480px) 66vw, 300px"
+          src="/brand/logos/logo-horizontal-light-512.png"
+          width={512}
+        />
       </h1>
 
       <Image

@@ -17,6 +17,13 @@
   text-align: center;
 }
 
+/* Пропорции держит сам файл: задаётся только ширина. */
+.mark {
+  width: 56px;
+  height: auto;
+  margin-bottom: var(--rc-space-2);
+}
+
 .mascot,
 .mascotDimmed {
   width: min(44vw, 180px);

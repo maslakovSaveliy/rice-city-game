@@ -49,6 +49,11 @@ describe("StatusScreen", () => {
     // Пустой alt даёт роль presentation: Рисинка здесь украшение, её описание
     // ничего не добавляет к тексту ошибки.
     expect(screen.getByRole("presentation")).toHaveAttribute("alt", "");
-    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+
+    // Названная картинка на экране ровно одна — знак бренда. Рисинка в этот
+    // список не попадает, иначе скринридер прочитал бы её дважды: как
+    // «Рисинка» и как заголовок ошибки.
+    expect(screen.getAllByRole("img")).toHaveLength(1);
+    expect(screen.getByRole("img")).toHaveAccessibleName("РИСсити");
   });
 });

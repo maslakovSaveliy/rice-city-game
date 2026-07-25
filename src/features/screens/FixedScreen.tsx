@@ -66,7 +66,14 @@ function FixedMenu({ percent, onShowDiscount }: { percent: number; onShowDiscoun
     <main className={styles.menu}>
       <p className={styles.kicker}>Игра завершена</p>
       <h1 className={styles.wordmark}>
-        РИС<span className={styles.wordmarkAccent}>сити</span>
+        <Image
+          alt="РИСсити"
+          className={styles.wordmarkImage}
+          height={79}
+          sizes="(max-width: 480px) 66vw, 300px"
+          src="/brand/logos/logo-horizontal-light-512.png"
+          width={512}
+        />
       </h1>
 
       <Image

@@ -13,6 +13,15 @@ export const metadata: Metadata = {
     "Игра-кликер РИСсити: тапай Рисинку за столом и накапливай скидку на счёт. Только для мобильных устройств.",
   robots: { index: false, follow: false },
   applicationName: "РИСсити",
+  /**
+   * Знак из официального набора. Тёмная версия: вкладки и плитки домашнего
+   * экрана в подавляющем большинстве светлые, а на светлом по бренд-правилу
+   * идёт именно `dark`.
+   */
+  icons: {
+    icon: "/brand/logos/logo-mark-dark-64.png",
+    apple: "/brand/logos/logo-mark-dark-256.png",
+  },
   formatDetection: { telephone: false, email: false, address: false },
 };
 
