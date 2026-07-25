@@ -42,11 +42,17 @@ export function Hud() {
         <div className={styles.progressTrack}>
           <div className={styles.progressFill} style={{ transform: `scaleX(${progress.ratio})` }} />
         </div>
-        <p className={styles.progressHint}>
-          {progress.nextPercent === null
-            ? "Максимум достигнут"
-            : `До ${progress.nextPercent}% осталось ${grainFormatter.format(progress.grainsToNext)}`}
-        </p>
+        {/* Ярлык и число — отдельные узлы, прибитые к краям шкалы. Одной
+            строкой по центру подпись дёргалась: смена разрядов меняла её
+            ширину, и текст ездил при каждом тапе. */}
+        {progress.nextPercent === null ? (
+          <p className={`${styles.progressHint} ${styles.progressHintDone}`}>Максимум достигнут</p>
+        ) : (
+          <p className={styles.progressHint}>
+            <span>До {progress.nextPercent}% осталось</span>
+            <span>{grainFormatter.format(progress.grainsToNext)}</span>
+          </p>
+        )}
       </div>
     </header>
   );

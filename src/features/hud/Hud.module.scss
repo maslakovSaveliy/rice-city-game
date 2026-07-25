@@ -66,9 +66,25 @@
   transition: transform var(--rc-dur-fast) var(--rc-ease-out);
 }
 
+/**
+ * Подпись под шкалой — строка данных, а не фраза по центру.
+ *
+ * При центрировании смена разрядов («750» → «99» → «9») меняла ширину всей
+ * строки, и подпись ездила из стороны в сторону на каждом тапе. Теперь ярлык
+ * прибит к левому краю шкалы, число — к правому, и меняется только пустота
+ * между ними. Табличные цифры добивают дрожь внутри самого числа.
+ */
 .progressHint {
+  display: flex;
+  gap: var(--rc-space-3);
+  justify-content: space-between;
   margin-top: var(--rc-space-2);
+  font-variant-numeric: tabular-nums;
   font-size: var(--rc-text-xs);
   color: color-mix(in srgb, var(--rc-rice) 62%, transparent);
-  text-align: center;
+}
+
+/* Достигнутый максимум — фраза без числа, разводить по краям нечего. */
+.progressHintDone {
+  justify-content: center;
 }
