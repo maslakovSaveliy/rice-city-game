@@ -55,11 +55,6 @@
   overflow-y: auto;
 }
 
-.noticeText {
-  max-width: 28ch;
-  color: color-mix(in srgb, var(--rc-rice) 68%, transparent);
-}
-
 .offline {
   display: block;
   padding: var(--rc-space-2) var(--rc-space-4);

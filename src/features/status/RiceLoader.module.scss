@@ -1,0 +1,152 @@
+/**
+ * Лоудер: зёрна подпрыгивают на горячем воке.
+ *
+ * Словарь эффекта: stagger + squash & stretch + anticipation + follow-through,
+ * поверх пульсирующего блика.
+ *
+ * Кольцо из зёрен, с которого начинали, читалось как обычный спиннер: форма
+ * была рисовая, а язык — библиотечный. Прыжок с приседанием перед взлётом и
+ * расплющиванием при посадке говорит «рис жарится», а не «идёт загрузка», и
+ * повторяет моторику самой игры — Рисинка на тап сжимается ровно так же.
+ *
+ * Всё держится на `opacity` и `transform`: только их композитор гоняет без
+ * пересчёта раскладки.
+ */
+
+$grain-width: 12px;
+$grain-height: 20px;
+$hop-height: 26px;
+$hop-duration: 1040ms;
+
+.root {
+  display: grid;
+  gap: var(--rc-space-5);
+  place-items: center;
+
+  /**
+   * Задержка появления важнее самой анимации.
+   *
+   * На быстрой сети состояние приходит за десятки миллисекунд, и лоудер успел
+   * бы мигнуть — это читается как дефект, а не как забота. `both` держит
+   * нулевую прозрачность всю задержку, поэтому короткая загрузка проходит
+   * незаметно.
+   */
+  animation: loaderIn var(--rc-dur-base) var(--rc-ease-out) 280ms both;
+}
+
+.pan {
+  position: relative;
+  display: flex;
+  gap: var(--rc-space-2);
+  align-items: flex-end;
+  justify-content: center;
+  /* Место для прыжка: без запаса верхнее зерно обрезалось бы контейнером. */
+  padding-top: $hop-height;
+}
+
+/**
+ * Блик горячего вока. Лежит под зёрнами и разгорается в такт: без него они
+ * прыгают в пустоте и опора не читается.
+ */
+.pan::after {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 152px;
+  height: 20px;
+  content: "";
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--rc-orange) 46%, transparent) 0%,
+    transparent 70%
+  );
+  transform: translateX(-50%);
+  /* Задержка равна стаггеру среднего зерна (90ms × 2 в `RiceLoader.tsx`):
+     блик разгорается под серединой волны, а не под её началом. Держать её
+     здесь приходится потому, что inline-стиль до псевдоэлемента не доходит. */
+  animation: panGlow $hop-duration var(--rc-ease-in-out) 180ms infinite;
+}
+
+.grain {
+  width: $grain-width;
+  height: $grain-height;
+  /* Базовое состояние — ровный ряд зёрен. Именно его увидит гость с
+     `prefers-reduced-motion`: глобальное правило гасит анимацию, и зёрна
+     остаются здесь, а не пропадают. */
+  background: var(--rc-rice);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rc-terracotta) 40%, transparent);
+  /* Сжатие идёт от опоры, как у Рисинки на тап. */
+  transform-origin: 50% 100%;
+  animation: grainHop $hop-duration var(--rc-ease-in-out) infinite;
+}
+
+.label {
+  max-width: 24ch;
+  font-size: var(--rc-text-base);
+  color: color-mix(in srgb, var(--rc-rice) 72%, transparent);
+  text-align: center;
+  text-wrap: balance;
+  animation: labelBreathe 2.4s var(--rc-ease-in-out) infinite;
+}
+
+@keyframes loaderIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/**
+ * Приседание перед взлётом, растягивание в полёте, расплющивание на посадке.
+ * Две трети цикла зерно просто лежит — иначе пять зёрен подряд читаются как
+ * рябь, а не как отдельные прыжки.
+ */
+@keyframes grainHop {
+  0%,
+  62%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+
+  10% {
+    transform: translateY(0) scale(1.16, 0.84);
+  }
+
+  30% {
+    transform: translateY(-$hop-height) scale(0.9, 1.12);
+  }
+
+  48% {
+    transform: translateY(0) scale(1.2, 0.8);
+  }
+}
+
+@keyframes panGlow {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translateX(-50%) scaleX(0.92);
+  }
+
+  48% {
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1);
+  }
+}
+
+@keyframes labelBreathe {
+  0%,
+  100% {
+    opacity: 0.62;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}

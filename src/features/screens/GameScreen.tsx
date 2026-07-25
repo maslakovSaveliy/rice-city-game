@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { RiceLoader } from "@/features/status/RiceLoader";
 import { StatusScreen } from "@/features/status/StatusScreen";
 import { useGameRuntime } from "@/hooks/use-game-runtime";
 import { useGameStore } from "@/store/use-game-store";
@@ -60,7 +61,7 @@ export function GameScreen() {
   if (phase === null) {
     return (
       <div className={styles.notice}>
-        <p className={styles.noticeText}>Готовим рис…</p>
+        <RiceLoader label="Готовим рис…" />
       </div>
     );
   }
