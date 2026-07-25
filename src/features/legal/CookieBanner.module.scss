@@ -1,7 +1,14 @@
+/**
+ * Отдельный слой поверх содержимого: раскладку не трогает вовсе.
+ *
+ * Оливковый фон выбран потому, что баннер должен читаться и на тёмных игровых
+ * экранах, и на светлых юридических страницах. Коричневый сливался с фоном
+ * игры, кремовый слился бы со страницами документов. Оливковый отличается по
+ * тону от обоих, при этом остаётся внутри брендовой палитры.
+ */
 .root {
   position: fixed;
   right: var(--rc-space-3);
-  bottom: var(--rc-space-3);
   bottom: max(var(--rc-space-3), env(safe-area-inset-bottom));
   left: var(--rc-space-3);
   z-index: var(--rc-z-banner);
@@ -10,16 +17,17 @@
   align-items: center;
   padding: var(--rc-space-3) var(--rc-space-4);
   color: var(--rc-rice);
-  background: color-mix(in srgb, var(--rc-brown-deep) 94%, transparent);
+  background: var(--rc-olive-dark);
+  border: 1px solid color-mix(in srgb, var(--rc-orange) 42%, transparent);
   border-radius: var(--rc-radius-lg);
-  box-shadow: var(--rc-shadow-lg);
+  box-shadow: 0 12px 32px rgb(20 8 4 / 55%);
   animation: slideIn var(--rc-dur-slow) var(--rc-ease-out) both;
 }
 
 .text {
   flex: 1;
   font-size: var(--rc-text-xs);
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 .link {
@@ -30,11 +38,12 @@
 .button {
   flex-shrink: 0;
   min-height: var(--rc-tap-min);
-  padding-inline: var(--rc-space-4);
+  padding-inline: var(--rc-space-3);
   font-family: var(--rc-font-display);
   font-size: var(--rc-text-sm);
   font-weight: 700;
   color: var(--rc-accent-fg);
+  white-space: nowrap;
   background: var(--rc-orange);
   border-radius: var(--rc-radius-pill);
 

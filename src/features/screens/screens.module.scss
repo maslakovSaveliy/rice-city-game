@@ -27,11 +27,12 @@
   flex-direction: column;
   gap: var(--rc-space-3);
   align-items: center;
-  justify-content: center;
+  /* `safe center` вместо `center`: при обычном центрировании содержимое,
+     не влезающее по высоте, обрезается сверху и туда невозможно прокрутить.
+     На узких экранах так пропадала верхушка логотипа. */
+  justify-content: safe center;
   min-height: 0;
   padding: var(--rc-space-6) var(--rc-space-4);
-  /* Запас под уведомление о cookie появляется только пока оно видно. */
-  padding-bottom: calc(var(--rc-space-6) + var(--rc-banner-offset));
   overflow-y: auto;
   text-align: center;
 }

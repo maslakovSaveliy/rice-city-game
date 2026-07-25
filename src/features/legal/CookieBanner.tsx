@@ -31,19 +31,6 @@ export function CookieBanner() {
     }
   }, []);
 
-  // Пока баннер виден, страница резервирует под него место через переменную
-  // `--rc-banner-offset`: иначе он накрывает реквизиты и подвалы.
-  useEffect(() => {
-    if (visible && !playing) {
-      document.body.dataset.cookieNotice = "visible";
-    } else {
-      delete document.body.dataset.cookieNotice;
-    }
-    return () => {
-      delete document.body.dataset.cookieNotice;
-    };
-  }, [visible, playing]);
-
   // Во время игры баннер прячется: он закреплён у нижней кромки и накрывал бы
   // кнопки управления. Гость видит его в меню до начала игры и после неё.
   if (!visible || playing) {
@@ -61,9 +48,10 @@ export function CookieBanner() {
 
   return (
     <aside aria-label="Уведомление о файлах cookie" className={styles.root}>
+      {/* Коротко: баннер лежит поверх содержимого, и каждая лишняя строка
+          закрывает всё больше экрана. Подробности — на странице по ссылке. */}
       <p className={styles.text}>
-        Игра сохраняет один технический файл cookie — без него не получится продолжить вашу игру.
-        Аналитики и рекламы здесь нет.{" "}
+        Только технические cookie, без аналитики.{" "}
         <Link className={styles.link} href="/legal/cookies">
           Подробнее
         </Link>

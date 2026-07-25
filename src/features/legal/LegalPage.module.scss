@@ -71,11 +71,7 @@
 
 .footer {
   padding: var(--rc-space-5) var(--rc-space-4);
-  /* Запас снизу под уведомление о cookie: оно закреплено у нижней кромки
-     и иначе накрывало бы реквизиты. */
-  padding-bottom: calc(
-    var(--rc-space-5) + var(--rc-banner-offset) + env(safe-area-inset-bottom)
-  );
+  padding-bottom: calc(var(--rc-space-5) + env(safe-area-inset-bottom));
   margin-top: auto;
   border-top: 1px solid var(--rc-border);
 }

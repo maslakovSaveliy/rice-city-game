@@ -20,7 +20,8 @@ export function MenuScreen() {
 
   return (
     <main className={styles.menu}>
-      <p className={styles.kicker}>Семейный ГастроДом</p>
+      {/* Строка «Семейный ГастроДом» убрана: на узких экранах она вставала
+          впритык к логотипу и отнимала высоту у главного действия. */}
       <h1 className={styles.wordmark}>
         РИС<span className={styles.wordmarkAccent}>сити</span>
       </h1>
