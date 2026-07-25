@@ -29,8 +29,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ru">
-      <body className={fontVariables}>{children}</body>
+    // Переменные шрифтов вешаются на <html>, а не на <body>: токены в
+    // `_tokens.scss` объявлены на `:root`, и с body они бы не разрешились.
+    <html lang="ru" className={fontVariables}>
+      <body>{children}</body>
     </html>
   );
 }

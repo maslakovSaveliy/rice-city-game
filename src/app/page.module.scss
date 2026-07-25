@@ -20,10 +20,10 @@
 .title {
   font-size: var(--rc-text-hero);
   color: var(--rc-brown);
+}
 
-  &::first-letter {
-    color: var(--rc-orange);
-  }
+.titleAccent {
+  color: var(--rc-orange);
 }
 
 .script {

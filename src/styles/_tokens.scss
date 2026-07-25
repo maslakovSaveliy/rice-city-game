@@ -49,7 +49,9 @@
   --rc-text-xl: 1.5rem;
   --rc-text-2xl: 2rem;
   --rc-text-3xl: 2.75rem;
-  --rc-text-hero: clamp(3rem, 18vw, 6rem);
+  /* Unbounded очень широкий: на 18vw слово «РИСсити» вылезало за вьюпорт
+     на 390px. Предел подобран так, чтобы семь знаков помещались с полями. */
+  --rc-text-hero: clamp(2rem, 12vw, 4.5rem);
 
   /* Шаг сетки 4px */
   --rc-space-1: 0.25rem;
