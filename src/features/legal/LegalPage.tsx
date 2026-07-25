@@ -18,7 +18,8 @@ import {
  */
 export function LegalPage({ document }: { document: LegalDocument }) {
   return (
-    <div className={styles.root}>
+    // Атрибут читает `global.scss`: под светлой страницей холст тоже светлый.
+    <div className={styles.root} data-surface="legal">
       <main className={styles.content}>
         <Link className={styles.back} href="/">
           ← К игре
