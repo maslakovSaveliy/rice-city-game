@@ -1,0 +1,79 @@
+.dialog {
+  width: min(92vw, 400px);
+  /* Возвращаем то, что снёс глобальный сброс `* { margin: 0 }`: именно
+     `margin: auto` центрирует модальный `<dialog>` в браузере. */
+  margin: auto;
+  padding: var(--rc-space-5);
+  color: var(--rc-rice);
+  background: var(--rc-brown-deep);
+  border: 0;
+  border-radius: var(--rc-radius-lg);
+  box-shadow: var(--rc-shadow-lg);
+
+  &::backdrop {
+    background: rgb(20 8 4 / 62%);
+    backdrop-filter: blur(2px);
+  }
+
+  &[open] {
+    animation: appear var(--rc-dur-base) var(--rc-ease-out) both;
+  }
+}
+
+.title {
+  font-size: var(--rc-text-lg);
+  text-align: center;
+}
+
+.description {
+  margin-top: var(--rc-space-3);
+  font-size: var(--rc-text-sm);
+  color: color-mix(in srgb, var(--rc-rice) 74%, transparent);
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rc-space-2);
+  margin-top: var(--rc-space-5);
+}
+
+.cancel,
+.confirm {
+  min-height: var(--rc-tap-min);
+  padding: var(--rc-space-3) var(--rc-space-5);
+  font-family: var(--rc-font-display);
+  font-size: var(--rc-text-base);
+  font-weight: 700;
+  white-space: nowrap;
+  border-radius: var(--rc-radius-pill);
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Безопасный выбор выглядит основным: отмена не должна теряться. */
+.cancel {
+  color: var(--rc-accent-fg);
+  background: var(--rc-orange);
+}
+
+.confirm {
+  color: color-mix(in srgb, var(--rc-rice) 80%, transparent);
+  background: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc-rice) 26%, transparent);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

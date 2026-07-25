@@ -13,6 +13,12 @@ export type SessionAction =
   | { readonly type: "upgrade"; readonly id: UpgradeId }
   | { readonly type: "finish" }
   | { readonly type: "fix" }
-  | { readonly type: "restart" };
+  | { readonly type: "restart" }
+  /**
+   * Полный сброс визита: зафиксированная скидка отбрасывается, блокировка
+   * снимается, гость возвращается в главное меню. Действие разрушительное,
+   * поэтому в интерфейсе закрыто подтверждением.
+   */
+  | { readonly type: "reset" };
 
 export type SessionActionType = SessionAction["type"];

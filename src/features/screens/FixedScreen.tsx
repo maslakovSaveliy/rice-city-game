@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ORGANIZER } from "@/features/legal/legal-content";
 import { useGameStore } from "@/store/use-game-store";
 import styles from "./screens.module.scss";
@@ -54,6 +55,9 @@ export function FixedScreen() {
 }
 
 function FixedMenu({ percent, onShowDiscount }: { percent: number; onShowDiscount: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const reset = useGameStore((state) => state.reset);
+
   return (
     <main className={styles.menu}>
       <p className={styles.kicker}>Игра завершена</p>
@@ -74,11 +78,31 @@ function FixedMenu({ percent, onShowDiscount }: { percent: number; onShowDiscoun
         Скидка зафиксирована: <strong className={styles.fixedSummaryValue}>{percent}%</strong>
       </p>
 
-      <Button onClick={onShowDiscount} size="lg">
-        Показать официанту
-      </Button>
+      <div className={styles.resultActions}>
+        <Button onClick={onShowDiscount} size="lg">
+          Показать официанту
+        </Button>
+        <Button onClick={() => setConfirming(true)} variant="secondary">
+          Сыграть ещё раз
+        </Button>
+      </div>
 
-      <p className={styles.menuFinePrint}>Одна скидка на визит. Новая игра — в следующий раз.</p>
+      <p className={styles.menuFinePrint}>
+        Скидка на счёт применяется один раз за визит. Новая игра сотрёт эту.
+      </p>
+
+      <ConfirmDialog
+        cancelLabel="Оставить скидку"
+        confirmLabel="Стереть и начать заново"
+        description={`Зафиксированная скидка ${percent}% пропадёт, и её нельзя будет вернуть. Новый час начнётся с нуля.`}
+        onCancel={() => setConfirming(false)}
+        onConfirm={() => {
+          setConfirming(false);
+          void reset();
+        }}
+        open={confirming}
+        title="Начать заново?"
+      />
 
       <nav aria-label="Документы" className={styles.menuLegal}>
         <Link className={styles.menuLegalLink} href="/legal/rules">

@@ -6,6 +6,7 @@ import {
   finishSession,
   fixDiscount,
   purchase,
+  resetSession,
   restartSession,
   startSession,
 } from "@/game/reducer";
@@ -95,6 +96,8 @@ function reduce(state: GameState, action: SessionAction, now: number): GameState
       return fixDiscount(advance(state, now), now);
     case "restart":
       return restartSession(advance(state, now), now);
+    case "reset":
+      return resetSession(advance(state, now));
   }
 }
 
@@ -117,6 +120,10 @@ async function recordTransition(
 }
 
 function eventTypeFor(before: GameState, after: GameState): EventType | null {
+  // Сброс отличается от перезапуска: гость отказался от уже полученной скидки.
+  if (before.phase === "fixed" && after.phase === "idle") {
+    return "reset";
+  }
   if (after.attempts > before.attempts) {
     return "restarted";
   }

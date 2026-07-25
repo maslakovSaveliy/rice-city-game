@@ -40,7 +40,7 @@ export const events = sqliteTable("events", {
   taps: integer("taps"),
 });
 
-export type EventType = "started" | "finished" | "fixed" | "restarted";
+export type EventType = "started" | "finished" | "fixed" | "restarted" | "reset";
 
 export type SessionRow = typeof sessions.$inferSelect;
 export type NewSessionRow = typeof sessions.$inferInsert;

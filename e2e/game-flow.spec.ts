@@ -136,6 +136,56 @@ test("после фиксации можно уйти в меню и верну�
   await expect(page.getByText("Покажите официанту")).toBeVisible();
 });
 
+test("отказ от скидки требует подтверждения и возвращает в главное меню", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Играть" }).tap();
+
+  const synced = waitForSync(page);
+  await tapMascot(page, 25);
+  await synced;
+
+  await page.getByRole("button", { name: "Завершить" }).tap();
+  await page.getByRole("button", { name: "Зафиксировать" }).tap();
+  await page.getByRole("button", { name: "В меню" }).tap();
+
+  // Отмена ничего не ломает: скидка остаётся на месте.
+  await page.getByRole("button", { name: "Сыграть ещё раз" }).tap();
+  await expect(page.getByText("Начать заново?")).toBeVisible();
+  await page.getByRole("button", { name: "Оставить скидку" }).tap();
+  await expect(page.getByText(/Скидка зафиксирована/)).toBeVisible();
+
+  // Подтверждение сбрасывает сессию на сервере.
+  await page.getByRole("button", { name: "Сыграть ещё раз" }).tap();
+  await page.getByRole("button", { name: "Стереть и начать заново" }).tap();
+
+  await expect(page.getByRole("button", { name: "Играть" })).toBeVisible();
+
+  // Сброс настоящий: новая игра действительно запускается.
+  await page.getByRole("button", { name: "Играть" }).tap();
+  await expect(page.getByRole("button", { name: TAP_TARGET })).toBeVisible();
+  expect(await grainsOf(page)).toBe(0);
+});
+
+test("сброс переживает перезагрузку: сервер знает, что скидки больше нет", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Играть" }).tap();
+
+  const synced = waitForSync(page);
+  await tapMascot(page, 25);
+  await synced;
+
+  await page.getByRole("button", { name: "Завершить" }).tap();
+  await page.getByRole("button", { name: "Зафиксировать" }).tap();
+  await page.getByRole("button", { name: "В меню" }).tap();
+  await page.getByRole("button", { name: "Сыграть ещё раз" }).tap();
+  await page.getByRole("button", { name: "Стереть и начать заново" }).tap();
+  await expect(page.getByRole("button", { name: "Играть" })).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Играть" })).toBeVisible();
+  await expect(page.getByText("Покажите официанту")).toHaveCount(0);
+});
+
 test("после перезагрузки гость снова видит свою скидку", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Играть" }).tap();

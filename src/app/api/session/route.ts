@@ -35,6 +35,7 @@ const actionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("finish") }),
   z.object({ type: z.literal("fix") }),
   z.object({ type: z.literal("restart") }),
+  z.object({ type: z.literal("reset") }),
 ]);
 
 /** Синхронизация идёт раз в две секунды; запас на повторы и ручные действия. */

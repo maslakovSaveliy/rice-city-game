@@ -15,11 +15,12 @@ import {
   fixDiscount,
   purchase,
   registerTap,
+  resetSession,
   restartSession,
   resumeAfterHidden,
   startSession,
 } from "./reducer";
-import { createInitialState } from "./session";
+import { createInitialState, isVisitLocked } from "./session";
 import type { GameState } from "./types";
 
 const NOW = 1_700_000_000_000;
@@ -238,6 +239,44 @@ describe("restartSession", () => {
   it("перезапускать можно только из экрана результата", () => {
     const inGame = playing();
     expect(restartSession(inGame, NOW)).toBe(inGame);
+  });
+});
+
+describe("resetSession", () => {
+  const fixedState = (): GameState => {
+    const result = finishSession(playing({ grains: 5_000, taps: 80 }), NOW + 60_000);
+    return fixDiscount(result, NOW + 61_000);
+  };
+
+  it("возвращает в главное меню и стирает скидку", () => {
+    const next = resetSession(fixedState());
+
+    expect(next.phase).toBe("idle");
+    expect(next.fixedDiscount).toBeNull();
+    expect(next.fixedAt).toBeNull();
+    expect(next.grains).toBe(0);
+    expect(next.taps).toBe(0);
+  });
+
+  it("снимает блокировку визита, чтобы можно было начать заново", () => {
+    const next = resetSession(fixedState());
+
+    expect(isVisitLocked(next, NOW + 62_000)).toBe(false);
+    expect(startSession(next, NOW + 62_000).phase).toBe("playing");
+  });
+
+  it("отказ от скидки остаётся в счётчике попыток", () => {
+    expect(resetSession(fixedState()).attempts).toBe(1);
+  });
+
+  it("работает и с экрана результата", () => {
+    const result = finishSession(playing(), NOW + 60_000);
+    expect(resetSession(result).phase).toBe("idle");
+  });
+
+  it("посреди игры не срабатывает: это не способ обнулить неудачный час", () => {
+    const inGame = playing({ grains: 1_000 });
+    expect(resetSession(inGame)).toBe(inGame);
   });
 });
 

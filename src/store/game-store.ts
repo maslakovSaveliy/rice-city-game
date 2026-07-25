@@ -55,6 +55,8 @@ export interface GameStoreState {
   finish: () => Promise<void>;
   fix: () => Promise<void>;
   restart: () => Promise<void>;
+  /** Отбрасывает зафиксированную скидку и возвращает в главное меню. */
+  reset: () => Promise<void>;
 }
 
 export type GameStore = ReturnType<typeof createGameStore>;
@@ -223,6 +225,7 @@ export function createGameStore({ api, now }: GameStoreDeps) {
       finish: () => perform({ type: "finish" }),
       fix: () => perform({ type: "fix" }),
       restart: () => perform({ type: "restart" }),
+      reset: () => perform({ type: "reset" }),
     };
   });
 }
