@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { type PointerEvent, useCallback, useEffect, useRef } from "react";
+import { soundPlayer } from "@/features/audio/sound";
 import { burstAt } from "@/features/particles/particles";
 import { HEAT_MAX } from "@/game/constants";
 import { gameStore, useGameStore } from "@/store/use-game-store";
@@ -48,6 +49,7 @@ export function TapTarget() {
 
       squash(mascotRef.current);
       navigator.vibrate?.(HAPTIC_MS);
+      soundPlayer.playTap(after.heat / HEAT_MAX);
       burstAt(event.clientX, event.clientY, after.grains - before.grains, performance.now());
     },
     [tap],

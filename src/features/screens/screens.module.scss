@@ -116,6 +116,10 @@
 /* Игровой экран */
 
 .play {
+  /* Предел размера цели тапа. Задаётся здесь, потому что зависит от того,
+     открыта ли панель улучшений, — сам компонент об этом не знает. */
+  --rc-tap-target-max: 46dvh;
+
   position: relative;
   display: flex;
   flex: 1;
@@ -123,6 +127,10 @@
   /* Ноль, а не auto: иначе поле не сжимается и панель улучшений выдавливает
      футер за пределы экрана. */
   min-height: 0;
+}
+
+.playCompact {
+  --rc-tap-target-max: 26dvh;
 }
 
 .playField {
@@ -140,10 +148,10 @@
   z-index: var(--rc-z-hud);
   display: flex;
   flex-shrink: 0;
-  gap: var(--rc-space-3);
+  gap: var(--rc-space-2);
   align-items: center;
   justify-content: center;
-  padding: var(--rc-space-4);
+  padding: var(--rc-space-4) var(--rc-space-3);
   padding-bottom: max(var(--rc-space-4), env(safe-area-inset-bottom));
 }
 

@@ -33,6 +33,15 @@ test("правила называют исключения по алкоголю
   await expect(page.getByRole("main")).toContainText("алкогольной и табачной продукции");
 });
 
+test("правила называют конкретный срок акции", async ({ page }) => {
+  await page.goto("/legal/rules");
+
+  // Без дат правила акции неполны: срок — обязательный элемент.
+  const main = page.getByRole("main");
+  await expect(main).toContainText("27 июля 2026 года");
+  await expect(main).toContainText("27 сентября 2026 года");
+});
+
 test("правила заявляют отсутствие случайности", async ({ page }) => {
   await page.goto("/legal/rules");
   // Это не украшение текста: случайность в награде превратила бы акцию

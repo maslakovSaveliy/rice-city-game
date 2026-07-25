@@ -1,0 +1,19 @@
+.root {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: var(--rc-tap-min);
+  height: var(--rc-tap-min);
+  font-size: var(--rc-text-lg);
+  line-height: 1;
+  /* Тот же непрозрачный фон с размытием, что у соседних кнопок: над светлой
+     подложкой Рисинки прозрачные элементы пропадают. */
+  background: color-mix(in srgb, var(--rc-brown-deep) 76%, transparent);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc-rice) 20%, transparent);
+  backdrop-filter: blur(10px);
+
+  &:active {
+    transform: scale(0.94);
+  }
+}

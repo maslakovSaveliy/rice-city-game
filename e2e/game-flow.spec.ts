@@ -27,6 +27,12 @@ function waitForSync(page: Page): Promise<unknown> {
   );
 }
 
+/** Завершение теперь закрыто подтверждением: два нажатия вместо одного. */
+async function finishGame(page: Page): Promise<void> {
+  await page.getByRole("button", { name: "Завершить" }).tap();
+  await page.getByRole("button", { name: "Да, завершить" }).tap();
+}
+
 function grainsOf(page: Page): Promise<number> {
   return page
     .locator('[class*="GrainCounter"] [class*="value"]')
@@ -98,7 +104,7 @@ test("результат и фиксация скидки", async ({ page }) => 
   await tapMascot(page, 25);
   await synced;
 
-  await page.getByRole("button", { name: "Завершить" }).tap();
+  await finishGame(page);
 
   const result = page.getByRole("button", { name: "Зафиксировать" });
   await expect(result).toBeVisible();
@@ -119,7 +125,7 @@ test("после фиксации можно уйти в меню и верну�
   await tapMascot(page, 25);
   await synced;
 
-  await page.getByRole("button", { name: "Завершить" }).tap();
+  await finishGame(page);
   await page.getByRole("button", { name: "Зафиксировать" }).tap();
   await expect(page.getByText("Покажите официанту")).toBeVisible();
 
@@ -144,7 +150,7 @@ test("отказ от скидки требует подтверждения и 
   await tapMascot(page, 25);
   await synced;
 
-  await page.getByRole("button", { name: "Завершить" }).tap();
+  await finishGame(page);
   await page.getByRole("button", { name: "Зафиксировать" }).tap();
   await page.getByRole("button", { name: "В меню" }).tap();
 
@@ -174,7 +180,7 @@ test("сброс переживает перезагрузку: сервер з�
   await tapMascot(page, 25);
   await synced;
 
-  await page.getByRole("button", { name: "Завершить" }).tap();
+  await finishGame(page);
   await page.getByRole("button", { name: "Зафиксировать" }).tap();
   await page.getByRole("button", { name: "В меню" }).tap();
   await page.getByRole("button", { name: "Сыграть ещё раз" }).tap();
@@ -194,7 +200,7 @@ test("после перезагрузки гость снова видит св�
   await tapMascot(page, 25);
   await synced;
 
-  await page.getByRole("button", { name: "Завершить" }).tap();
+  await finishGame(page);
   await page.getByRole("button", { name: "Зафиксировать" }).tap();
   const percent = await page.locator('[class*="bigPercent"]').first().innerText();
 
@@ -202,6 +208,34 @@ test("после перезагрузки гость снова видит св�
 
   await expect(page.getByText("Покажите официанту")).toBeVisible();
   expect(await page.locator('[class*="bigPercent"]').first().innerText()).toBe(percent);
+});
+
+test("завершение закрыто подтверждением: случайный тап не обрывает игру", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Играть" }).tap();
+  await tapMascot(page, 5);
+
+  await page.getByRole("button", { name: "Завершить" }).tap();
+  await expect(page.getByText("Завершить игру?")).toBeVisible();
+
+  await page.getByRole("button", { name: "Продолжить игру" }).tap();
+
+  // Игра продолжается, тапать по-прежнему можно.
+  await expect(page.getByRole("button", { name: TAP_TARGET })).toBeVisible();
+  const before = await grainsOf(page);
+  await tapMascot(page, 3);
+  expect(await grainsOf(page)).toBeGreaterThan(before);
+});
+
+test("звук можно выключить, и выбор запоминается", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Играть" }).tap();
+
+  await page.getByRole("button", { name: "Выключить звук" }).tap();
+  await expect(page.getByRole("button", { name: "Включить звук" })).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Включить звук" })).toBeVisible();
 });
 
 test("двойной тап по Рисинке не масштабирует страницу", async ({ page }) => {
