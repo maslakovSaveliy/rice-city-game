@@ -5,11 +5,29 @@ import { type PointerEvent, useCallback, useEffect, useRef } from "react";
 import { soundPlayer } from "@/features/audio/sound";
 import { burstAt } from "@/features/particles/particles";
 import { HEAT_MAX } from "@/game/constants";
+import { discountFromGrains } from "@/game/economy";
+import { MASCOT_LEVELS, type MascotLevel, mascotLevelFor } from "@/game/levels";
 import { gameStore, useGameStore } from "@/store/use-game-store";
 import styles from "./TapTarget.module.scss";
 
 const SQUASH_DURATION_MS = 170;
 const HAPTIC_MS = 8;
+
+/**
+ * Облик Рисинки по уровню. Сам уровень считает `src/game/levels.ts`; здесь
+ * только сопоставление с файлами — путям к картинкам в чистой логике не место.
+ */
+const MASCOT_SOURCE: Record<MascotLevel, string> = {
+  1: "/mascot/levels/risinka-level-1.png",
+  2: "/mascot/levels/risinka-level-2.png",
+  3: "/mascot/levels/risinka-level-3.png",
+};
+
+const MASCOT_ALT: Record<MascotLevel, string> = {
+  1: "Рисинка",
+  2: "Рисинка в косухе",
+  3: "Рисинка на троне",
+};
 
 /**
  * На сколько «+N» поднимается над верхней кромкой подложки.
@@ -32,9 +50,12 @@ const SCORE_LIFT_PX = 10;
 export function TapTarget() {
   const mascotRef = useRef<HTMLDivElement>(null);
   const tap = useGameStore((state) => state.tap);
-  // Селектор отдаёт булево, а не объект: производные величины на объектах
+  // Селекторы отдают примитивы, а не объекты: производные величины на объектах
   // ломают кеш снимка в zustand.
   const untouched = useGameStore((state) => (state.local?.taps ?? 0) === 0);
+  const level = useGameStore((state) =>
+    mascotLevelFor(discountFromGrains(state.local?.grains ?? 0)),
+  );
 
   useEffect(() => {
     // iOS Safari игнорирует `user-scalable=no`, поэтому щипок гасится вручную.
@@ -91,16 +112,24 @@ export function TapTarget() {
         className={untouched ? `${styles.mascot} ${styles.idle}` : styles.mascot}
         ref={mascotRef}
       >
-        <Image
-          alt="Рисинка"
-          className={styles.image}
-          draggable={false}
-          height={320}
-          priority
-          sizes="(max-width: 480px) 62vw, 320px"
-          src="/mascot/risinka.png"
-          width={320}
-        />
+        {/* Все три облика лежат в разметке и переключаются прозрачностью.
+            Смена `src` на повышении уровня давала бы вспышку пустоты, пока
+            грузится новый файл, — ровно в тот момент, который должен быть
+            наградой. Заодно получается кросс-фейд вместо подмены кадра. */}
+        {MASCOT_LEVELS.map((current) => (
+          <Image
+            alt={current === level ? MASCOT_ALT[current] : ""}
+            aria-hidden={current !== level}
+            className={current === level ? `${styles.image} ${styles.imageActive}` : styles.image}
+            draggable={false}
+            height={340}
+            key={current}
+            priority={current === 1}
+            sizes="(max-width: 480px) 76vw, 340px"
+            src={MASCOT_SOURCE[current]}
+            width={340}
+          />
+        ))}
       </div>
     </button>
   );
