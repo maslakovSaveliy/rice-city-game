@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { BASE_TAP_VALUE } from "@/game/constants";
 
 /**
  * Проверки серверной защиты через настоящий HTTP.
@@ -58,7 +59,8 @@ test.describe("серверная сессия", () => {
     });
 
     const body = await response.json();
-    expect(body.state.grains).toBe(1);
+    // Один тап стоит ровно `BASE_TAP_VALUE` — жар с первого нажатия ещё нулевой.
+    expect(body.state.grains).toBe(BASE_TAP_VALUE);
     expect(body.discount).toBe(0);
     expect(body.state.phase).toBe("playing");
   });

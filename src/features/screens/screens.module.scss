@@ -185,6 +185,9 @@
   padding: var(--rc-space-4);
   padding-bottom: max(var(--rc-space-4), env(safe-area-inset-bottom));
   overflow-y: auto;
+  // Восемь улучшений в лист не помещаются, панель прокручивается внутри себя.
+  // `contain` не даёт прокрутке дойти до края и потянуть за собой всю страницу.
+  overscroll-behavior: contain;
   background: color-mix(in srgb, var(--rc-brown-deep) 72%, transparent);
   border-radius: var(--rc-radius-xl) var(--rc-radius-xl) 0 0;
   box-shadow: 0 -12px 32px rgb(20 8 4 / 45%);

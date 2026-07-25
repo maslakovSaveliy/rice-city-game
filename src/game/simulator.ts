@@ -183,6 +183,13 @@ export const PERSONAS: readonly Persona[] = [
     strategy: "greedy",
   },
   {
+    id: "kid-hooked",
+    label: "Залип на весь час",
+    tapsPerSecond: 6,
+    activeMinutes: 50,
+    strategy: "greedy",
+  },
+  {
     id: "adult-max",
     label: "Взрослый-максималист",
     tapsPerSecond: 8,
@@ -195,5 +202,17 @@ export const PERSONAS: readonly Persona[] = [
     tapsPerSecond: 20,
     activeMinutes: 60,
     strategy: "smart",
+  },
+  /**
+   * Гость, который почти не играет, но оставил экран включённым на весь час.
+   * Ради него помощники и считаются долей силы тапа: без вложений в нажатие
+   * им нечего умножать.
+   */
+  {
+    id: "idler",
+    label: "Положил телефон",
+    tapsPerSecond: 6,
+    activeMinutes: 3,
+    strategy: "greedy",
   },
 ] as const;

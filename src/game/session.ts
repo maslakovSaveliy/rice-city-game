@@ -11,6 +11,7 @@ export function createInitialState(): GameState {
     phase: "idle",
     grains: 0,
     totalGrains: 0,
+    tapGrains: 0,
     taps: 0,
     upgrades: { ...EMPTY_UPGRADE_LEVELS },
     heat: 0,

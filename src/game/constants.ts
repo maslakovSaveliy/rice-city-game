@@ -5,7 +5,7 @@ import type { UpgradeDefinition, UpgradeId } from "./types";
  *
  * ВАЖНО: ни одно значение здесь не подбирается «на глаз». Любое изменение
  * проверяется симулятором персон в `economy.balance.test.ts` — тесты падают,
- * если средний гость перестаёт попадать в коридор 10–16%.
+ * если средний гость перестаёт попадать в коридор 11–15%.
  *
  * ЮРИДИЧЕСКОЕ ОГРАНИЧЕНИЕ: начисление зёрен и расчёт скидки полностью
  * детерминированы. Случайность в награде превращает акцию в стимулирующую
@@ -16,21 +16,27 @@ import type { UpgradeDefinition, UpgradeId } from "./types";
 /** Потолок скидки в процентах. Заведомо недостижим за один час. */
 export const DISCOUNT_MAX = 30;
 
-/** Стоимость первого процента в зёрнах. При базовом тапе это ~12 тапов. */
-export const FIRST_PERCENT_COST = 12;
+/**
+ * Стоимость первого процента в зёрнах. При базовом тапе это около десяти
+ * нажатий — гость видит движение в первые секунды.
+ *
+ * Масштаб намеренно крупный: счётчик в сотнях тысяч читается как достижение,
+ * а мелкие числа в клике ощущаются скупо.
+ */
+export const FIRST_PERCENT_COST = 750;
 
 /**
  * Каждый следующий процент дороже предыдущего во столько раз.
  *
  * Значение подобрано симулятором, а не интуицией: улучшения компаундируются
  * гораздо сильнее, чем кажется на бумаге, и разрыв между казуалом и
- * автокликером за час достигает четырёх порядков. Кривая с таким основанием
- * укладывает весь этот разброс в 9–29%.
+ * автокликером за час достигает пяти порядков. Кривая с таким основанием
+ * укладывает весь этот разброс в 5–24%, оставляя тридцатку недостижимой.
  */
-export const DISCOUNT_COST_GROWTH = 1.61;
+export const DISCOUNT_COST_GROWTH = 1.84;
 
 /** Зёрен за один тап без улучшений и без комбо. */
-export const BASE_TAP_VALUE = 1;
+export const BASE_TAP_VALUE = 10;
 
 /** Длительность сессии. */
 export const SESSION_DURATION_MS = 60 * 60 * 1000;
@@ -74,6 +80,18 @@ export const SYNC_INTERVAL_MS = 2_000;
  */
 export const MAX_TAPS_PER_BATCH = TAP_BURST;
 
+/**
+ * Потолок пассивного дохода: помощники за сессию не могут принести больше этой
+ * доли от того, что гость натапал руками.
+ *
+ * Это структурная гарантия, а не подкрутка чисел. Без неё любой пассив,
+ * достаточно сильный чтобы его стоило покупать, позволял обогнать играющего,
+ * просто оставив экран включённым. Перепробовано пять наборов констант — тот,
+ * кто играет, обгонял того, кто положил телефон, только ценой того, что
+ * помощники становились заведомо невыгодной покупкой.
+ */
+export const PASSIVE_CAP_RATIO = 0.6;
+
 /** Шаг игрового цикла для пассивного дохода и затухания жара. */
 export const TICK_INTERVAL_MS = 100;
 
@@ -85,24 +103,47 @@ export const TICK_INTERVAL_MS = 100;
  */
 export const MAX_ADVANCE_DT_MS = 1_000;
 
+/**
+ * Улучшения.
+ *
+ * Тап-линейка — основная: пять ступеней, каждая заметно мощнее предыдущей,
+ * чтобы за час было что открывать. Порядок цен растёт примерно на порядок за
+ * ступень, поэтому «Казан» видит только тот, кто играл всерьёз.
+ *
+ * Помощники (`passive`) дают ДОЛЮ силы тапа в секунду, а не фиксированное
+ * число зёрен. Из-за этого они бесполезны тому, кто не вкладывался в нажатие,
+ * и осмысленны тому, кто вкладывался, — вместо ловушки получается пауза, пока
+ * ребёнок ест. От «положил телефон и жду» страхует не их слабость, а
+ * `PASSIVE_CAP_RATIO`.
+ */
 export const UPGRADES: readonly UpgradeDefinition[] = [
   {
     id: "paws",
     kind: "tap",
     title: "Крепкие лапки",
     description: "Рисинка тапает увереннее",
-    gain: 1,
-    baseCost: 60,
-    costGrowth: 1.45,
-    maxLevel: 10,
+    gain: 10,
+    baseCost: 600,
+    costGrowth: 1.42,
+    maxLevel: 12,
   },
   {
     id: "chopsticks",
     kind: "tap",
     title: "Палочки",
-    description: "Ловит по пять зёрен разом",
-    gain: 5,
-    baseCost: 1_500,
+    description: "Ловит горсть зёрен разом",
+    gain: 60,
+    baseCost: 12_000,
+    costGrowth: 1.45,
+    maxLevel: 10,
+  },
+  {
+    id: "ladle",
+    kind: "tap",
+    title: "Половник",
+    description: "Черпает, а не цепляет",
+    gain: 250,
+    baseCost: 150_000,
     costGrowth: 1.5,
     maxLevel: 8,
   },
@@ -111,40 +152,50 @@ export const UPGRADES: readonly UpgradeDefinition[] = [
     kind: "tap",
     title: "Вок",
     description: "Целый вок за одно касание",
-    gain: 25,
-    baseCost: 40_000,
+    gain: 1_200,
+    baseCost: 2_000_000,
     costGrowth: 1.55,
     maxLevel: 6,
+  },
+  {
+    id: "kazan",
+    kind: "tap",
+    title: "Казан",
+    description: "Столько риса за раз мало кто видел",
+    gain: 6_000,
+    baseCost: 30_000_000,
+    costGrowth: 1.6,
+    maxLevel: 5,
   },
   {
     id: "cooker",
     kind: "passive",
     title: "Рисоварка",
-    description: "Варит рис, пока ты отдыхаешь",
-    gain: 1,
-    baseCost: 200,
-    costGrowth: 1.4,
-    maxLevel: 12,
+    description: "Доваривает, пока ты отдыхаешь",
+    gain: 0.12,
+    baseCost: 4_000,
+    costGrowth: 1.45,
+    maxLevel: 5,
   },
   {
     id: "waiter",
     kind: "passive",
     title: "Официант",
     description: "Приносит зёрна прямо к столу",
-    gain: 8,
-    baseCost: 6_000,
-    costGrowth: 1.45,
-    maxLevel: 10,
+    gain: 0.25,
+    baseCost: 120_000,
+    costGrowth: 1.5,
+    maxLevel: 4,
   },
   {
     id: "kitchen",
     kind: "passive",
     title: "Кухня",
     description: "Работает вся кухня разом",
-    gain: 50,
-    baseCost: 120_000,
-    costGrowth: 1.5,
-    maxLevel: 8,
+    gain: 0.5,
+    baseCost: 4_000_000,
+    costGrowth: 1.55,
+    maxLevel: 3,
   },
 ] as const;
 
@@ -155,7 +206,9 @@ export const UPGRADE_BY_ID: ReadonlyMap<UpgradeId, UpgradeDefinition> = new Map(
 export const EMPTY_UPGRADE_LEVELS = Object.freeze({
   paws: 0,
   chopsticks: 0,
+  ladle: 0,
   wok: 0,
+  kazan: 0,
   cooker: 0,
   waiter: 0,
   kitchen: 0,

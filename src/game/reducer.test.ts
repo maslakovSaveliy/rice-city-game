@@ -8,7 +8,13 @@ import {
   SESSION_DURATION_MS,
   TAP_BURST,
 } from "./constants";
-import { discountFromGrains, getUpgrade, grainsForDiscount, upgradeCost } from "./economy";
+import {
+  discountFromGrains,
+  getUpgrade,
+  grainsForDiscount,
+  passiveRate,
+  upgradeCost,
+} from "./economy";
 import {
   advance,
   finishSession,
@@ -67,11 +73,17 @@ describe("advance", () => {
   });
 
   it("начисляет пассивный доход помощников", () => {
-    const state = playing({ upgrades: { ...createInitialState().upgrades, cooker: 5 } });
+    const upgrades = { ...createInitialState().upgrades, cooker: 5 };
+    // Пассив ограничен долей от натапанного, поэтому без нажатий он равен нулю
+    // по построению. Запас берём заведомо больше секунды дохода.
+    const state = playing({ upgrades, tapGrains: 1_000_000, totalGrains: 1_000_000 });
     const next = advance(state, NOW + 1_000);
 
-    expect(next.grains).toBeCloseTo(5, 6);
-    expect(next.totalGrains).toBeCloseTo(5, 6);
+    // Помощники дают долю силы тапа, а не фиксированное число.
+    const expected = passiveRate(upgrades);
+    expect(expected).toBeGreaterThan(0);
+    expect(next.grains - state.grains).toBeCloseTo(expected, 6);
+    expect(next.totalGrains - state.totalGrains).toBeCloseTo(expected, 6);
   });
 
   it("гасит жар со временем и не уводит его в минус", () => {
@@ -89,11 +101,13 @@ describe("advance", () => {
   });
 
   it("обрезает разрыв во времени: свёрнутая вкладка не приносит зёрна", () => {
-    const state = playing({ upgrades: { ...createInitialState().upgrades, cooker: 10 } });
+    const upgrades = { ...createInitialState().upgrades, cooker: 5 };
+    const state = playing({ upgrades });
     const afterGap = advance(state, NOW + 10 * 60 * 1000);
 
     // Начислено не за десять минут, а максимум за MAX_ADVANCE_DT_MS.
-    expect(afterGap.grains).toBeLessThanOrEqual((10 * MAX_ADVANCE_DT_MS) / 1000);
+    const oneSecond = passiveRate(upgrades) * (MAX_ADVANCE_DT_MS / 1000);
+    expect(afterGap.grains).toBeLessThanOrEqual(oneSecond);
   });
 
   it("по истечении часа переводит в результат", () => {
@@ -102,7 +116,7 @@ describe("advance", () => {
   });
 
   it("не начисляет пассив за время после конца часа", () => {
-    const state = playing({ upgrades: { ...createInitialState().upgrades, cooker: 10 } });
+    const state = playing({ upgrades: { ...createInitialState().upgrades, cooker: 5 } });
     const overshoot = advance(state, NOW + SESSION_DURATION_MS + 60_000);
     const fair = advance(state, NOW + MAX_ADVANCE_DT_MS);
 
@@ -282,7 +296,7 @@ describe("resetSession", () => {
 
 describe("resumeAfterHidden", () => {
   it("двигает точку отсчёта без начисления", () => {
-    const state = playing({ upgrades: { ...createInitialState().upgrades, kitchen: 8 } });
+    const state = playing({ upgrades: { ...createInitialState().upgrades, kitchen: 3 } });
     const resumed = resumeAfterHidden(state, NOW + 30 * 60 * 1000);
 
     expect(resumed.grains).toBe(0);

@@ -11,6 +11,10 @@ import { UpgradeList } from "./UpgradeList";
 const NOW = 1_700_000_000_000;
 const paws = getUpgrade("paws");
 
+/** Тот же формат, что и в компоненте: русские разряды с неразрывным пробелом. */
+const formatCost = (cost: number): string =>
+  new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 }).format(cost);
+
 function setPlaying(overrides: Partial<GameState> = {}): void {
   const base = startSession(createInitialState(), NOW);
   gameStore.setState({ status: "ready", server: base, local: { ...base, ...overrides } });
@@ -27,21 +31,21 @@ describe("UpgradeList", () => {
 
     expect(screen.getByText("Крепкие лапки")).toBeInTheDocument();
     expect(screen.getByText("Вок")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: String(paws.baseCost) })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: formatCost(paws.baseCost) })).toBeInTheDocument();
   });
 
   it("кнопка заблокирована, пока не хватает зёрен", () => {
     setPlaying({ grains: paws.baseCost - 1 });
     render(<UpgradeList />);
 
-    expect(screen.getByRole("button", { name: String(paws.baseCost) })).toBeDisabled();
+    expect(screen.getByRole("button", { name: formatCost(paws.baseCost) })).toBeDisabled();
   });
 
   it("кнопка доступна ровно на пороге цены", () => {
     setPlaying({ grains: paws.baseCost });
     render(<UpgradeList />);
 
-    expect(screen.getByRole("button", { name: String(paws.baseCost) })).toBeEnabled();
+    expect(screen.getByRole("button", { name: formatCost(paws.baseCost) })).toBeEnabled();
   });
 
   it("на максимальном уровне вместо цены написано «макс.»", () => {
@@ -66,7 +70,9 @@ describe("UpgradeList", () => {
     render(<UpgradeList />);
 
     const expected = upgradeCost(paws, 2);
-    expect(screen.getByRole("button", { name: String(expected) })).toBeInTheDocument();
+    // Цена в кнопке отформатирована по-русски: с четвёртой цифры появляется
+    // неразрывный пробел, и сравнение с `String(expected)` разъезжается.
+    expect(screen.getByRole("button", { name: formatCost(expected) })).toBeInTheDocument();
     expect(expected).toBeGreaterThan(paws.baseCost);
   });
 
@@ -76,7 +82,7 @@ describe("UpgradeList", () => {
     gameStore.setState({ buy });
 
     render(<UpgradeList />);
-    await userEvent.click(screen.getByRole("button", { name: String(paws.baseCost) }));
+    await userEvent.click(screen.getByRole("button", { name: formatCost(paws.baseCost) }));
 
     expect(buy).toHaveBeenCalledWith("paws");
   });

@@ -14,7 +14,9 @@ import type { GameState } from "@/game/types";
 const upgradeLevelsSchema = z.object({
   paws: z.int().min(0),
   chopsticks: z.int().min(0),
+  ladle: z.int().min(0),
   wok: z.int().min(0),
+  kazan: z.int().min(0),
   cooker: z.int().min(0),
   waiter: z.int().min(0),
   kitchen: z.int().min(0),
@@ -24,6 +26,7 @@ const gameStateSchema = z.object({
   phase: z.enum(["idle", "playing", "result", "fixed"]),
   grains: z.number().min(0),
   totalGrains: z.number().min(0),
+  tapGrains: z.number().min(0),
   taps: z.int().min(0),
   upgrades: upgradeLevelsSchema,
   heat: z.number().min(0),

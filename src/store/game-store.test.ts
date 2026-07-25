@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SessionAction } from "@/game/actions";
 import { applyTapBatch } from "@/game/batch";
 import { SESSION_DURATION_MS, TAP_BURST } from "@/game/constants";
+import { getUpgrade, upgradeCost } from "@/game/economy";
 import { advance, purchase, startSession } from "@/game/reducer";
 import { createInitialState } from "@/game/session";
 import type { GameState } from "@/game/types";
@@ -373,7 +374,8 @@ describe("действия", () => {
     await started();
 
     // Копим на сервере с запасом, чтобы проверка не зависела от округлений.
-    const cost = 60;
+    // Цена берётся из экономики, а не числом: она балансировочная константа.
+    const cost = upgradeCost(getUpgrade("paws"), 0);
     let guard = 0;
     while (server.state.grains < cost * 3 && guard < 50) {
       for (let index = 0; index < TAP_BURST; index += 1) {

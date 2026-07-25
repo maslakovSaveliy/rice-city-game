@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { MAX_TAPS_PER_BATCH, SESSION_DURATION_MS, SYNC_INTERVAL_MS } from "@/game/constants";
-import { grainsForDiscount } from "@/game/economy";
+import {
+  BASE_TAP_VALUE,
+  MAX_TAPS_PER_BATCH,
+  SESSION_DURATION_MS,
+  SYNC_INTERVAL_MS,
+} from "@/game/constants";
+import { getUpgrade, upgradeCost } from "@/game/economy";
 import type { Database } from "./db/client";
 import { events } from "./db/schema";
 import { createTestDatabase } from "./db/testing";
@@ -65,7 +70,7 @@ describe("серверный подсчёт тапов", () => {
     // считает сервер, подсунуть их в запросе нельзя по схеме действия.
     const view = await applyAction(db, id, { type: "tap", taps: 1 }, NOW + 100);
 
-    expect(view?.state.grains).toBe(1);
+    expect(view?.state.grains).toBe(BASE_TAP_VALUE);
     expect(view?.discount).toBe(0);
   });
 
@@ -152,15 +157,21 @@ describe("покупки", () => {
   it("покупка списывает зёрна и снижает скидку", async () => {
     const id = await startedSession();
 
-    // Накапливаем ровно на двенадцать процентов, затем тратим.
+    // Копим ровно на первый уровень «Крепких лапок». Привязываться к проценту
+    // скидки здесь нельзя: цена процента — балансировочная константа, и при
+    // её росте цикл превращался в тысячи запросов к базе.
+    const target = upgradeCost(getUpgrade("paws"), 0);
     let now = NOW;
-    while (true) {
+    let guard = 0;
+    while (guard < 200) {
       now += SYNC_INTERVAL_MS;
+      guard += 1;
       const view = await applyAction(db, id, { type: "tap", taps: MAX_TAPS_PER_BATCH }, now);
-      if ((view?.state.grains ?? 0) >= grainsForDiscount(12)) {
+      if ((view?.state.grains ?? 0) >= target) {
         break;
       }
     }
+    expect(guard, "не удалось накопить на улучшение за 200 окон").toBeLessThan(200);
 
     const before = await readSession(db, id, now);
     const after = await applyAction(db, id, { type: "upgrade", id: "paws" }, now);

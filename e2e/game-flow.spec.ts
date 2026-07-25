@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { BASE_TAP_VALUE, HEAT_MAX } from "@/game/constants";
 
 /**
  * Полный путь гостя: QR → меню → игра → результат → фиксация.
@@ -9,6 +10,16 @@ import { expect, type Page, test } from "@playwright/test";
  */
 
 const TAP_TARGET = "Тапнуть по Рисинке";
+
+/**
+ * Допустимое расхождение предсказания клиента и расчёта сервера.
+ *
+ * Клиент начисляет каждый тап в свой момент времени, сервер применяет ту же
+ * пачку распределённой по интервалу синхронизации, поэтому жар между тапами
+ * эволюционирует чуть иначе. Допуск задан в тапах, а не в зёрнах: в зёрнах он
+ * ломается при каждой перенастройке экономики — так и случилось.
+ */
+const DRIFT_TOLERANCE = 3 * BASE_TAP_VALUE * (1 + HEAT_MAX);
 
 async function tapMascot(page: Page, times: number): Promise<void> {
   const target = page.getByRole("button", { name: TAP_TARGET });
@@ -38,6 +49,61 @@ function waitForServerTaps(page: Page, atLeast: number): Promise<unknown> {
   });
 }
 
+/** Тапов в одной пачке. Между пачками корзина токенов успевает пополниться. */
+const TAPS_PER_BATCH = 20;
+
+/** Сколько пачек максимум. Страховка от бесконечного цикла на сломанной игре. */
+const MAX_TAP_BATCHES = 12;
+
+/**
+ * Тапает, пока скидка не перевалит за ноль.
+ *
+ * Фиксированного числа тапов здесь быть не может: цена первого процента —
+ * балансировочная константа, и на её правке половина набора разом краснела.
+ * Цикл переживает любую перенастройку экономики.
+ */
+async function tapUntilDiscount(page: Page): Promise<void> {
+  const target = page.getByRole("button", { name: TAP_TARGET });
+  const discount = page.locator('[class*="discountValue"]');
+
+  for (let batch = 0; batch < MAX_TAP_BATCHES; batch += 1) {
+    for (let index = 0; index < TAPS_PER_BATCH; index += 1) {
+      await target.tap();
+    }
+    if ((await discount.innerText()) !== "0%") {
+      return;
+    }
+  }
+
+  throw new Error(
+    `скидка осталась нулевой после ${MAX_TAP_BATCHES * TAPS_PER_BATCH} тапов — ` +
+      "сломана экономика или подсчёт тапов",
+  );
+}
+
+/**
+ * Тапает до первого процента и дожидается, пока его увидит сервер.
+ *
+ * Ожидание ставится ДО тапов: синхронизация идёт по таймеру, и запрос,
+ * отправленный раньше последних тапов, счёл бы условие выполненным.
+ */
+async function playUntilDiscount(page: Page): Promise<void> {
+  const synced = page.waitForResponse(async (response) => {
+    if (
+      !response.url().includes("/api/session") ||
+      response.request().method() !== "POST" ||
+      !response.ok()
+    ) {
+      return false;
+    }
+    const body: { discount?: number } = await response.json();
+    return (body.discount ?? 0) > 0;
+  });
+
+  await tapUntilDiscount(page);
+  await synced;
+}
+
 /** Завершение теперь закрыто подтверждением: два нажатия вместо одного. */
 async function finishGame(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Завершить" }).tap();
@@ -65,7 +131,7 @@ test("тапы копят зёрна и поднимают скидку", async 
   await expect(page.getByRole("button", { name: TAP_TARGET })).toBeVisible();
   expect(await grainsOf(page)).toBe(0);
 
-  await tapMascot(page, 25);
+  await tapUntilDiscount(page);
 
   expect(await grainsOf(page)).toBeGreaterThan(0);
   await expect(page.locator('[class*="discountValue"]')).not.toHaveText("0%");
@@ -84,15 +150,12 @@ test("прогресс живёт на сервере и переживает п
   await expect(page.getByRole("button", { name: TAP_TARGET })).toBeVisible();
 
   /**
-   * Точного совпадения быть не может, и это не баг. Клиент начисляет тапы в
-   * реальном времени, сервер применяет ту же пачку распределённой по интервалу,
-   * поэтому жар между тапами эволюционирует чуть иначе — расхождение в
-   * единицы зёрен. Проверяется главное: прогресс сохранился на сервере,
-   * а не откатился к нулю.
+   * Точного совпадения быть не может, и это не баг: см. `DRIFT_TOLERANCE`.
+   * Проверяется главное — прогресс сохранился на сервере, а не откатился к нулю.
    */
   const afterReload = await grainsOf(page);
   expect(afterReload).toBeGreaterThan(0);
-  expect(afterReload).toBeGreaterThanOrEqual(before - 3);
+  expect(afterReload).toBeGreaterThanOrEqual(before - DRIFT_TOLERANCE);
 });
 
 test("таймер идёт вниз", async ({ page }) => {
@@ -111,16 +174,17 @@ test("улучшение недоступно, пока не хватает зё
   await page.getByRole("button", { name: "Играть" }).tap();
   await page.getByRole("button", { name: "Улучшения" }).tap();
 
-  await expect(page.getByRole("button", { name: "60" })).toBeDisabled();
+  // Самое дорогое улучшение в начале сессии недоступно заведомо. Ищем по
+  // названию, а не по цене: цена — балансировочная константа и будет меняться.
+  const kazan = page.getByRole("listitem").filter({ hasText: "Казан" });
+  await expect(kazan.getByRole("button")).toBeDisabled();
 });
 
 test("результат и фиксация скидки", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Играть" }).tap();
 
-  const synced = waitForServerTaps(page, 25);
-  await tapMascot(page, 25);
-  await synced;
+  await playUntilDiscount(page);
 
   await finishGame(page);
 
@@ -139,9 +203,7 @@ test("после фиксации можно уйти в меню и верну�
   await page.goto("/");
   await page.getByRole("button", { name: "Играть" }).tap();
 
-  const synced = waitForServerTaps(page, 25);
-  await tapMascot(page, 25);
-  await synced;
+  await playUntilDiscount(page);
 
   await finishGame(page);
   await page.getByRole("button", { name: "Зафиксировать" }).tap();
@@ -164,9 +226,7 @@ test("отказ от скидки требует подтверждения и 
   await page.goto("/");
   await page.getByRole("button", { name: "Играть" }).tap();
 
-  const synced = waitForServerTaps(page, 25);
-  await tapMascot(page, 25);
-  await synced;
+  await playUntilDiscount(page);
 
   await finishGame(page);
   await page.getByRole("button", { name: "Зафиксировать" }).tap();
@@ -194,9 +254,7 @@ test("сброс переживает перезагрузку: сервер з�
   await page.goto("/");
   await page.getByRole("button", { name: "Играть" }).tap();
 
-  const synced = waitForServerTaps(page, 25);
-  await tapMascot(page, 25);
-  await synced;
+  await playUntilDiscount(page);
 
   await finishGame(page);
   await page.getByRole("button", { name: "Зафиксировать" }).tap();
@@ -214,9 +272,7 @@ test("после перезагрузки гость снова видит св�
   await page.goto("/");
   await page.getByRole("button", { name: "Играть" }).tap();
 
-  const synced = waitForServerTaps(page, 25);
-  await tapMascot(page, 25);
-  await synced;
+  await playUntilDiscount(page);
 
   await finishGame(page);
   await page.getByRole("button", { name: "Зафиксировать" }).tap();

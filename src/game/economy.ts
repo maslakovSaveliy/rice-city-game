@@ -12,6 +12,9 @@ import type { UpgradeDefinition, UpgradeLevels } from "./types";
 /** Гасит накопленную погрешность double на точных границах процентов. */
 const FLOAT_EPSILON = 1e-9;
 
+/** Допуск для чисел, которые видит гость. Доли зерна ему ни о чём не говорят. */
+const GRAIN_DISPLAY_EPSILON = 1e-6;
+
 /**
  * Сколько зёрен нужно держать на балансе, чтобы получить ровно `percent`.
  * Стоимость каждого следующего процента растёт геометрически, поэтому первые
@@ -62,7 +65,10 @@ export function discountProgress(grains: number): DiscountProgress {
   return {
     percent,
     nextPercent: percent + 1,
-    grainsToNext: Math.max(0, Math.ceil(ceiling - grains)),
+    // Округление вверх с допуском: геометрическая сумма оставляет мусор в
+    // последнем разряде, и на нулевом балансе `Math.ceil` показывал 751 зерно
+    // вместо ровно 750. Сам порог при этом трогать нельзя — сдвинутся проценты.
+    grainsToNext: Math.max(0, Math.ceil(ceiling - grains - GRAIN_DISPLAY_EPSILON)),
     ratio: clamp(reached / span, 0, 1),
   };
 }
@@ -94,14 +100,29 @@ export function tapValue(levels: UpgradeLevels): number {
   }, BASE_TAP_VALUE);
 }
 
-/** Зёрен в секунду от помощников. Начисляется только при видимой вкладке. */
-export function passiveRate(levels: UpgradeLevels): number {
+/**
+ * Доля силы тапа, которую помощники приносят каждую секунду.
+ *
+ * Ноль без единого помощника, и не зависит от того, сколько зёрен на счету.
+ */
+export function passiveShare(levels: UpgradeLevels): number {
   return UPGRADES.reduce((total, upgrade) => {
     if (upgrade.kind !== "passive") {
       return total;
     }
     return total + upgrade.gain * levels[upgrade.id];
   }, 0);
+}
+
+/**
+ * Зёрен в секунду от помощников. Начисляется только при видимой вкладке.
+ *
+ * Считается от силы тапа, а не фиксированным числом: см. пояснение к `gain`
+ * в `UpgradeDefinition`. Без вложений в нажатие помощники почти бесполезны,
+ * и путь «положил телефон и жду» закрывается сам собой.
+ */
+export function passiveRate(levels: UpgradeLevels): number {
+  return tapValue(levels) * passiveShare(levels);
 }
 
 /** Множитель комбо: от ×1 в покое до ×2 на полном жаре. */

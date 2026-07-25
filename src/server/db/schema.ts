@@ -17,6 +17,7 @@ export const sessions = sqliteTable("sessions", {
   phase: text("phase").$type<SessionPhase>().notNull(),
   grains: real("grains").notNull(),
   totalGrains: real("total_grains").notNull(),
+  tapGrains: real("tap_grains").notNull().default(0),
   taps: integer("taps").notNull(),
   heat: real("heat").notNull(),
   tapBudget: real("tap_budget").notNull(),

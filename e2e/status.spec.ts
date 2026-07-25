@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { BASE_TAP_VALUE, HEAT_MAX } from "@/game/constants";
 
 /**
  * Тупиковые состояния: 404 и отсутствие связи.
@@ -86,5 +87,20 @@ test("обрыв связи в игре не мешает тапать, прог
 
   await page.reload();
   await expect(target).toBeVisible();
-  expect(await readGrains()).toBeGreaterThanOrEqual(offlineTotal);
+
+  /**
+   * Допустимое расхождение предсказания клиента и расчёта сервера.
+   *
+   * Клиент начисляет каждый тап в свой момент времени, сервер применяет ту же
+   * пачку распределённой по интервалу синхронизации, поэтому жар между тапами
+   * эволюционирует чуть иначе. Допуск задан в тапах, а не в зёрнах: в зёрнах он
+   * ломается при каждой перенастройке экономики — так и случилось.
+   */
+  const DRIFT_TOLERANCE = 3 * BASE_TAP_VALUE * (1 + HEAT_MAX);
+
+  // Офлайн-тапы дошли до сервера: значение держится на накопленном уровне,
+  // а не откатилось к тому единственному тапу, что успел синхронизироваться.
+  const afterReload = await readGrains();
+  expect(afterReload).toBeGreaterThan(synced);
+  expect(afterReload).toBeGreaterThanOrEqual(offlineTotal - DRIFT_TOLERANCE);
 });

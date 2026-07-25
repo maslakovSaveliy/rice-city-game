@@ -1,0 +1,1 @@
+ALTER TABLE `sessions` ADD `tap_grains` real DEFAULT 0 NOT NULL;

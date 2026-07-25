@@ -4,6 +4,7 @@ import {
   HEAT_MAX,
   HEAT_PER_TAP,
   MAX_ADVANCE_DT_MS,
+  PASSIVE_CAP_RATIO,
   SESSION_DURATION_MS,
   TAP_BURST,
   TAP_RATE_LIMIT,
@@ -55,7 +56,7 @@ export function advance(state: GameState, now: number): GameState {
   const rawDelta = Math.max(0, boundary - state.lastTickAt);
   const deltaSeconds = Math.min(rawDelta, MAX_ADVANCE_DT_MS) / 1000;
 
-  const income = passiveRate(state.upgrades) * deltaSeconds;
+  const income = allowedPassiveIncome(state, deltaSeconds);
   const next: GameState = {
     ...state,
     grains: state.grains + income,
@@ -66,6 +67,23 @@ export function advance(state: GameState, now: number): GameState {
   };
 
   return expired ? { ...next, phase: "result" } : next;
+}
+
+/**
+ * Пассивный доход за интервал с учётом потолка.
+ *
+ * Помощники за сессию не могут принести больше `PASSIVE_CAP_RATIO` от того,
+ * что гость натапал руками. Это и есть гарантия, что оставленный включённым
+ * экран не обгонит того, кто играет: пассиву просто нечего умножать, пока
+ * нажатий мало.
+ */
+function allowedPassiveIncome(state: GameState, deltaSeconds: number): number {
+  const earnedPassive = state.totalGrains - state.tapGrains;
+  const allowance = state.tapGrains * PASSIVE_CAP_RATIO - earnedPassive;
+  if (allowance <= 0) {
+    return 0;
+  }
+  return Math.min(passiveRate(state.upgrades) * deltaSeconds, allowance);
 }
 
 /**
@@ -87,6 +105,7 @@ export function registerTap(state: GameState, now: number): GameState {
     ...advanced,
     grains: advanced.grains + reward,
     totalGrains: advanced.totalGrains + reward,
+    tapGrains: advanced.tapGrains + reward,
     taps: advanced.taps + 1,
     heat: clamp(advanced.heat + HEAT_PER_TAP, 0, HEAT_MAX),
     tapBudget: advanced.tapBudget - 1,

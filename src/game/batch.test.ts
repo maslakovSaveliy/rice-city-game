@@ -32,7 +32,11 @@ describe("applyTapBatch", () => {
   it("длинная тишина не превращается в пассивный доход за всё это время", () => {
     const withHelpers: GameState = {
       ...playing(),
-      upgrades: { ...createInitialState().upgrades, kitchen: 8 },
+      upgrades: { ...createInitialState().upgrades, kitchen: 3 },
+      // Потолок пассива считается от натапанного: без запаса зёрен помощники
+      // не начислили бы ничего и тест сравнивал бы два нуля.
+      tapGrains: 100_000_000,
+      totalGrains: 100_000_000,
     };
 
     const afterGap = applyTapBatch(withHelpers, 0, NOW + 10 * 60 * 1000);

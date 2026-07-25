@@ -18,7 +18,16 @@ export const dynamic = "force-dynamic";
  * POST — применить действие. Клиент присылает намерение, считает сервер.
  */
 
-const UPGRADE_IDS = ["paws", "chopsticks", "wok", "cooker", "waiter", "kitchen"] as const;
+const UPGRADE_IDS = [
+  "paws",
+  "chopsticks",
+  "ladle",
+  "wok",
+  "kazan",
+  "cooker",
+  "waiter",
+  "kitchen",
+] as const;
 
 const actionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("start") }),

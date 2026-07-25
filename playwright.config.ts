@@ -10,6 +10,12 @@ const BASE_URL = `http://127.0.0.1:${PORT}`;
  */
 export default defineConfig({
   testDir: "./e2e",
+  /**
+   * Стандартных 30 секунд не хватает. Первый процент скидки стоит несколько
+   * десятков настоящих касаний, а каждое `tap()` проходит полную проверку
+   * доступности элемента; под параллельной нагрузкой это уходит за минуту.
+   */
+  timeout: 90_000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

@@ -18,6 +18,18 @@ export function UpgradeList() {
   );
 }
 
+/**
+ * Помощники приносят долю силы тапа в секунду, а не фиксированное число зёрен.
+ * Показывать «+0,12 в секунду» было бы прямым обманом: без вложений в нажатие
+ * эта доля почти ничего не значит, а с ними — очень много.
+ */
+function formatGain(upgrade: UpgradeDefinition): string {
+  if (upgrade.kind === "tap") {
+    return `+${formatter.format(upgrade.gain)} за тап`;
+  }
+  return `+${Math.round(upgrade.gain * 100)}% силы тапа в секунду`;
+}
+
 function UpgradeRow({ upgrade, index }: { upgrade: UpgradeDefinition; index: number }) {
   const level = useGameStore((state) => state.local?.upgrades[upgrade.id] ?? 0);
   const affordable = useGameStore((state) =>
@@ -40,9 +52,7 @@ function UpgradeRow({ upgrade, index }: { upgrade: UpgradeDefinition; index: num
           {level > 0 && <span className={styles.level}>ур. {level}</span>}
         </p>
         <p className={styles.description}>
-          {upgrade.description} · {upgrade.kind === "tap" ? "+" : "+"}
-          {upgrade.gain}
-          {upgrade.kind === "tap" ? " за тап" : " в секунду"}
+          {upgrade.description} · {formatGain(upgrade)}
         </p>
       </div>
 

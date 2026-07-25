@@ -17,6 +17,7 @@ import {
   grainsPerTap,
   heatMultiplier,
   passiveRate,
+  passiveShare,
   tapValue,
   upgradeCost,
 } from "./economy";
@@ -144,13 +145,39 @@ describe("производство", () => {
   });
 
   it("тап-улучшения складываются, пассивные на тап не влияют", () => {
-    expect(tapValue(levels({ paws: 3, chopsticks: 2 }))).toBe(BASE_TAP_VALUE + 3 * 1 + 2 * 5);
-    expect(tapValue(levels({ cooker: 10 }))).toBe(BASE_TAP_VALUE);
+    const paws = getUpgrade("paws");
+    const chopsticks = getUpgrade("chopsticks");
+
+    expect(tapValue(levels({ paws: 3, chopsticks: 2 }))).toBe(
+      BASE_TAP_VALUE + 3 * paws.gain + 2 * chopsticks.gain,
+    );
+    expect(tapValue(levels({ cooker: 5 }))).toBe(BASE_TAP_VALUE);
   });
 
-  it("пассивные улучшения складываются, тап-улучшения на пассив не влияют", () => {
-    expect(passiveRate(levels({ cooker: 4, waiter: 2 }))).toBe(4 * 1 + 2 * 8);
+  it("помощники дают долю силы тапа, а не фиксированное число", () => {
+    const cooker = getUpgrade("cooker");
+
+    // Без единого помощника пассива нет вовсе.
     expect(passiveRate(levels({ paws: 10 }))).toBe(0);
+
+    // Доля считается от текущей силы тапа: помощник у слабого тапа даёт мало,
+    // у прокачанного — много. Именно это закрывает путь «положил телефон».
+    const weak = passiveRate(levels({ cooker: 2 }));
+    const strong = passiveRate(levels({ cooker: 2, paws: 10 }));
+
+    expect(weak).toBeCloseTo(BASE_TAP_VALUE * 2 * cooker.gain, 6);
+    expect(strong).toBeGreaterThan(weak);
+  });
+
+  it("доля помощников складывается по уровням", () => {
+    const cooker = getUpgrade("cooker");
+    const waiter = getUpgrade("waiter");
+
+    expect(passiveShare(levels({ cooker: 4, waiter: 2 }))).toBeCloseTo(
+      4 * cooker.gain + 2 * waiter.gain,
+      6,
+    );
+    expect(passiveShare(levels())).toBe(0);
   });
 });
 
@@ -166,7 +193,8 @@ describe("комбо", () => {
   });
 
   it("награда за тап учитывает и улучшения, и жар", () => {
-    expect(grainsPerTap(levels({ paws: 1 }), HEAT_MAX)).toBe((BASE_TAP_VALUE + 1) * 2);
+    const paws = getUpgrade("paws");
+    expect(grainsPerTap(levels({ paws: 1 }), HEAT_MAX)).toBe((BASE_TAP_VALUE + paws.gain) * 2);
   });
 });
 
