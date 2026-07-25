@@ -193,6 +193,22 @@
   color: color-mix(in srgb, var(--rc-rice) 76%, transparent);
 }
 
+.fixedActions {
+  margin-top: var(--rc-space-5);
+}
+
+.fixedSummary {
+  margin-top: var(--rc-space-2);
+  font-size: var(--rc-text-lg);
+  color: color-mix(in srgb, var(--rc-rice) 82%, transparent);
+}
+
+.fixedSummaryValue {
+  font-family: var(--rc-font-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--rc-orange-bright);
+}
+
 .resultActions {
   display: flex;
   flex-direction: column;

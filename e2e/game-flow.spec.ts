@@ -111,6 +111,49 @@ test("результат и фиксация скидки", async ({ page }) => 
   await expect(page.getByRole("button", { name: TAP_TARGET })).toHaveCount(0);
 });
 
+test("после фиксации можно уйти в меню и вернуться к скидке", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Играть" }).tap();
+
+  const synced = waitForSync(page);
+  await tapMascot(page, 25);
+  await synced;
+
+  await page.getByRole("button", { name: "Завершить" }).tap();
+  await page.getByRole("button", { name: "Зафиксировать" }).tap();
+  await expect(page.getByText("Покажите официанту")).toBeVisible();
+
+  await page.getByRole("button", { name: "В меню" }).tap();
+  await expect(page.getByText("Игра завершена")).toBeVisible();
+  await expect(page.getByText(/Скидка зафиксирована/)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Правила акции" })).toBeVisible();
+
+  // Кнопки «Играть» здесь быть не должно: сервер закрыл игру на визит,
+  // и она бы просто ничего не делала.
+  await expect(page.getByRole("button", { name: "Играть" })).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Показать официанту" }).tap();
+  await expect(page.getByText("Покажите официанту")).toBeVisible();
+});
+
+test("после перезагрузки гость снова видит свою скидку", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Играть" }).tap();
+
+  const synced = waitForSync(page);
+  await tapMascot(page, 25);
+  await synced;
+
+  await page.getByRole("button", { name: "Завершить" }).tap();
+  await page.getByRole("button", { name: "Зафиксировать" }).tap();
+  const percent = await page.locator('[class*="bigPercent"]').first().innerText();
+
+  await page.reload();
+
+  await expect(page.getByText("Покажите официанту")).toBeVisible();
+  expect(await page.locator('[class*="bigPercent"]').first().innerText()).toBe(percent);
+});
+
 test("двойной тап по Рисинке не масштабирует страницу", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Играть" }).tap();
