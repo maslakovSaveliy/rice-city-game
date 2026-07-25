@@ -44,6 +44,12 @@ export default defineConfig({
         "src/server/db/client.ts",
         "src/server/db/schema.ts",
         "src/server/db/testing.ts",
+        "src/store/use-game-store.ts",
+        // Композиция экранов и жизненный цикл на requestAnimationFrame.
+        // Проверяются в Playwright: в jsdom кадры не выдаются, и юнит-тест
+        // проверял бы моки вместо поведения.
+        "src/features/screens/**",
+        "src/hooks/**",
       ],
       thresholds: {
         lines: 70,

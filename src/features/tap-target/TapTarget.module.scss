@@ -1,0 +1,61 @@
+.root {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(62vw, 320px);
+  /* Пара `max-height` + `aspect-ratio` заставляет Рисинку сжиматься по
+     доступной высоте. Без этого при открытой панели улучшений она вылезала
+     поверх футера и перехватывала нажатия на кнопки. */
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  /* Цель тапа — единственное место, где прокрутка и зум запрещены полностью. */
+  touch-action: none;
+}
+
+.heat {
+  position: absolute;
+  inset: -6%;
+  background: radial-gradient(
+    circle at 50% 55%,
+    color-mix(in srgb, var(--rc-orange) 38%, transparent) 0%,
+    transparent 68%
+  );
+  border-radius: 50%;
+  transition:
+    opacity var(--rc-dur-fast) var(--rc-ease-out),
+    transform var(--rc-dur-fast) var(--rc-ease-out);
+}
+
+/**
+ * Кремовая подложка.
+ *
+ * У переданного PNG Рисинки фон не прозрачный, и на тёмном экране он читался
+ * бы как светлый квадрат. Подложка превращает это в осознанный элемент —
+ * керамическую плитку, на которой стоит Рисинка. Заодно она очерчивает зону
+ * тапа, что важно для детей.
+ *
+ * Когда появится исходник с прозрачностью, подложку можно снять или оставить
+ * по решению дизайна.
+ */
+.mascot {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--rc-rice);
+  border-radius: 28%;
+  box-shadow:
+    0 18px 28px rgb(20 8 4 / 45%),
+    inset 0 0 0 1px color-mix(in srgb, var(--rc-brown) 12%, transparent);
+  /* Сжатие идёт от нижней кромки: так вес читается как удар о стол. */
+  transform-origin: 50% 92%;
+  will-change: transform;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}

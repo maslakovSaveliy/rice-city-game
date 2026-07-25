@@ -1,0 +1,23 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.value {
+  font-family: var(--rc-font-display);
+  /* Табличные цифры: без них счётчик дёргается при смене разрядов. */
+  font-variant-numeric: tabular-nums;
+  font-size: var(--rc-text-2xl);
+  font-weight: 700;
+  color: var(--rc-rice);
+}
+
+.label {
+  margin-top: var(--rc-space-1);
+  font-size: var(--rc-text-xs);
+  color: color-mix(in srgb, var(--rc-rice) 62%, transparent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}

@@ -1,3 +1,4 @@
+import type { SessionAction } from "@/game/actions";
 import { applyTapBatch } from "@/game/batch";
 import { type PublicGameState, toPublicState } from "@/game/public-state";
 import {
@@ -8,7 +9,7 @@ import {
   restartSession,
   startSession,
 } from "@/game/reducer";
-import type { GameState, UpgradeId } from "@/game/types";
+import type { GameState } from "@/game/types";
 import type { Database } from "./db/client";
 import type { EventType } from "./db/schema";
 import { withSessionLock } from "./session-lock";
@@ -19,14 +20,6 @@ import {
   recordEvent,
   saveSession,
 } from "./session-repository";
-
-export type SessionAction =
-  | { readonly type: "start" }
-  | { readonly type: "tap"; readonly taps: number }
-  | { readonly type: "upgrade"; readonly id: UpgradeId }
-  | { readonly type: "finish" }
-  | { readonly type: "fix" }
-  | { readonly type: "restart" };
 
 /**
  * Сервер — единственный источник истины.

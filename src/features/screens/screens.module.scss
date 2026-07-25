@@ -1,0 +1,218 @@
+.stage {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  /* Игровые экраны тёмные, поэтому светлый цвет текста задаётся здесь и
+     наследуется. Иначе всё, что опирается на `color: inherit` — например
+     призрачная кнопка, — получало бы тёмно-коричневый цвет из `body`. */
+  color: var(--rc-rice);
+  background: var(--rc-play-bg);
+  animation: fade var(--rc-dur-base) var(--rc-ease-out) both;
+}
+
+.notice,
+.menu,
+.result,
+.fixed {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--rc-space-3);
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: var(--rc-space-6) var(--rc-space-4);
+  overflow-y: auto;
+  text-align: center;
+}
+
+.notice {
+  min-height: 100dvh;
+  background: var(--rc-play-bg);
+}
+
+.noticeTitle {
+  font-size: var(--rc-text-xl);
+  color: var(--rc-rice);
+}
+
+.noticeText {
+  max-width: 28ch;
+  color: color-mix(in srgb, var(--rc-rice) 68%, transparent);
+}
+
+.offline {
+  padding: var(--rc-space-2) var(--rc-space-4);
+  font-size: var(--rc-text-xs);
+  color: var(--rc-brown);
+  text-align: center;
+  background: var(--rc-orange-bright);
+}
+
+.kicker {
+  font-size: var(--rc-text-xs);
+  font-weight: 600;
+  color: color-mix(in srgb, var(--rc-rice) 62%, transparent);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.wordmark {
+  font-size: clamp(2rem, 12vw, 4.5rem);
+  color: var(--rc-rice);
+}
+
+.wordmarkAccent {
+  color: var(--rc-orange-bright);
+}
+
+/* Та же кремовая подложка, что на игровом экране: у исходника Рисинки
+   фон не прозрачный. Подробнее — в TapTarget.module.scss. */
+.menuMascot {
+  width: min(58vw, 260px);
+  height: auto;
+  background: var(--rc-rice);
+  border-radius: 28%;
+  box-shadow:
+    0 20px 28px rgb(20 8 4 / 45%),
+    inset 0 0 0 1px color-mix(in srgb, var(--rc-brown) 12%, transparent);
+}
+
+.script {
+  font-family: var(--rc-font-script);
+  font-size: var(--rc-text-xl);
+  color: var(--rc-orange-bright);
+}
+
+.menuText {
+  max-width: 30ch;
+  color: color-mix(in srgb, var(--rc-rice) 76%, transparent);
+}
+
+.menuFinePrint {
+  max-width: 32ch;
+  font-size: var(--rc-text-xs);
+  color: color-mix(in srgb, var(--rc-rice) 52%, transparent);
+}
+
+/* Игровой экран */
+
+.play {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  /* Ноль, а не auto: иначе поле не сжимается и панель улучшений выдавливает
+     футер за пределы экрана. */
+  min-height: 0;
+}
+
+.playField {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: 0;
+  padding: var(--rc-space-4);
+}
+
+.playFooter {
+  /* Позиционирование обязательно: Рисинка внутри поля тоже `position: relative`
+     и без явного слоя перекрывала бы кнопки, находясь раньше в разметке. */
+  position: relative;
+  z-index: var(--rc-z-hud);
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--rc-space-3);
+  align-items: center;
+  justify-content: center;
+  padding: var(--rc-space-4);
+  padding-bottom: max(var(--rc-space-4), env(safe-area-inset-bottom));
+}
+
+.sheet {
+  position: relative;
+  z-index: var(--rc-z-sheet);
+  flex-shrink: 0;
+  max-height: 46dvh;
+  padding: var(--rc-space-4);
+  padding-bottom: max(var(--rc-space-4), env(safe-area-inset-bottom));
+  overflow-y: auto;
+  background: color-mix(in srgb, var(--rc-brown-deep) 72%, transparent);
+  border-radius: var(--rc-radius-xl) var(--rc-radius-xl) 0 0;
+  box-shadow: 0 -12px 32px rgb(20 8 4 / 45%);
+  animation: slideUp var(--rc-dur-base) var(--rc-ease-out) both;
+}
+
+.sheetHint {
+  margin-bottom: var(--rc-space-3);
+  font-size: var(--rc-text-xs);
+  color: color-mix(in srgb, var(--rc-rice) 62%, transparent);
+  text-align: center;
+}
+
+/* Результат и фиксация */
+
+.bigPercent {
+  font-family: var(--rc-font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(5rem, 34vw, 11rem);
+  font-weight: 900;
+  line-height: 0.9;
+  color: var(--rc-orange-bright);
+  animation: pop var(--rc-dur-slow) var(--rc-ease-overshoot) both;
+}
+
+.bigPercentSign {
+  margin-left: 0.04em;
+  font-size: 0.42em;
+  /* `super` поднимает знак почти к верхней кромке цифры и разрывает пару.
+     Небольшой подъём читается как одно число. */
+  vertical-align: 0.55em;
+  opacity: 0.85;
+}
+
+.resultText {
+  max-width: 30ch;
+  color: color-mix(in srgb, var(--rc-rice) 76%, transparent);
+}
+
+.resultActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rc-space-3);
+  align-items: stretch;
+  width: min(100%, 320px);
+  margin-top: var(--rc-space-4);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(16px);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

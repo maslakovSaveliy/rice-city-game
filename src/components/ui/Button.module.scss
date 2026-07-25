@@ -1,0 +1,75 @@
+.root {
+  display: inline-flex;
+  gap: var(--rc-space-2);
+  align-items: center;
+  justify-content: center;
+  min-height: var(--rc-tap-min);
+  padding: var(--rc-space-3) var(--rc-space-5);
+  font-family: var(--rc-font-display);
+  font-size: var(--rc-text-base);
+  font-weight: 700;
+  line-height: 1;
+  /* Подпись в одну строку: перенос в «таблетке» смотрится сломанным. */
+  white-space: nowrap;
+  text-align: center;
+  border-radius: var(--rc-radius-pill);
+  transition:
+    transform var(--rc-dur-instant) var(--rc-ease-out),
+    box-shadow var(--rc-dur-fast) var(--rc-ease-out),
+    background-color var(--rc-dur-fast) var(--rc-ease-out);
+
+  /* Нажатие должно ощущаться физически: кнопка проседает, а не просто темнеет. */
+  &:active:not(:disabled) {
+    transform: translateY(1px) scale(0.98);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+.primary {
+  color: var(--rc-accent-fg);
+  background: var(--rc-orange);
+  box-shadow: var(--rc-shadow-md);
+
+  &:active:not(:disabled) {
+    background: var(--rc-orange-deep);
+    box-shadow: var(--rc-shadow-press);
+  }
+}
+
+.secondary {
+  color: var(--rc-rice);
+  background: color-mix(in srgb, var(--rc-rice) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc-rice) 24%, transparent);
+
+  &:active:not(:disabled) {
+    background: color-mix(in srgb, var(--rc-rice) 22%, transparent);
+  }
+}
+
+.ghost {
+  padding-inline: var(--rc-space-3);
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentcolor 40%, transparent);
+  text-underline-offset: 0.35em;
+  background: none;
+  opacity: 0.8;
+
+  &:active:not(:disabled) {
+    opacity: 1;
+  }
+}
+
+.md {
+  font-size: var(--rc-text-base);
+}
+
+.lg {
+  min-height: 56px;
+  padding: var(--rc-space-4) var(--rc-space-6);
+  font-size: var(--rc-text-lg);
+}
