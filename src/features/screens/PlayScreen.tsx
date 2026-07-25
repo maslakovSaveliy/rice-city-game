@@ -30,8 +30,14 @@ export function PlayScreen() {
       <div className={styles.playField}>
         <TapTarget />
         {/* Первое, чего игре не хватало: она нигде не говорила, что надо
-            делать. Подсказка уходит с первым же тапом. */}
-        {untouched && <p className={styles.playHint}>Тапай Рисинку</p>}
+            делать. Подсказка всегда в разметке и гаснет с первым тапом —
+            размонтирование обрывало бы переход, а место она не занимает. */}
+        <p
+          aria-hidden={!untouched}
+          className={untouched ? `${styles.playHint} ${styles.playHintVisible}` : styles.playHint}
+        >
+          Тапай Рисинку
+        </p>
       </div>
 
       <footer className={styles.playFooter}>
@@ -48,14 +54,19 @@ export function PlayScreen() {
         </Button>
       </footer>
 
-      {showUpgrades && (
-        <section aria-label="Улучшения" className={styles.sheet}>
-          <p className={styles.sheetHint}>
-            Улучшения тратят зёрна, поэтому скидка сразу просядет. Зато дальше пойдёт быстрее.
-          </p>
-          <UpgradeList />
-        </section>
-      )}
+      {/* Панель не размонтируется: только так у неё есть и открытие, и
+          закрытие. Пока она закрыта, `inert` убирает её содержимое из
+          доступности — нулевой высоты для этого мало. */}
+      <section
+        aria-label="Улучшения"
+        className={showUpgrades ? `${styles.sheet} ${styles.sheetOpen}` : styles.sheet}
+        inert={!showUpgrades}
+      >
+        <p className={styles.sheetHint}>
+          Улучшения тратят зёрна, поэтому скидка сразу просядет. Зато дальше пойдёт быстрее.
+        </p>
+        <UpgradeList />
+      </section>
 
       <ConfirmDialog
         cancelLabel="Продолжить игру"

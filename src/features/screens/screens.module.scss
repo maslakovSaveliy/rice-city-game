@@ -164,36 +164,55 @@
  * наружу, — как рис, подброшенный из-за спины.
  */
 /**
- * Рисинка прижата к низу поля, а не висит в его центре.
+ * Рисинка стоит по центру поля.
  *
- * Так у неё появляется опора, а весь свободный воздух собирается сверху —
- * ровно там, где летят зёрна и всплывает «+N». При центрировании пустота
- * делилась поровну сверху и снизу и не работала ни на что.
+ * Поле — это `flex: 1`, поэтому при открытии панели улучшений оно сжимается,
+ * и центрированная Рисинка сама уезжает вверх. Отдельного правила на подъём
+ * не нужно: движение целиком следует за высотой панели и потому идёт плавно.
  */
 .playField {
   position: relative;
   z-index: var(--rc-z-field);
   display: grid;
   flex: 1;
-  grid-auto-rows: min-content;
-  gap: var(--rc-space-4);
-  align-content: end;
-  justify-items: center;
+  place-items: center;
   min-height: 0;
-  padding: var(--rc-space-4) var(--rc-space-4) var(--rc-space-6);
+  padding: var(--rc-space-4);
 }
 
 /**
- * Подсказка до первого тапа. Живёт в потоке, а не поверх: иначе она
- * наезжала бы на Рисинку на низких экранах.
+ * Подсказка до первого тапа.
+ *
+ * Вне потока намеренно: в потоке она была строкой сетки и смещала Рисинку
+ * вверх, а с первым тапом та прыгала обратно. Теперь появление и уход — это
+ * переход прозрачности, а цель тапа не двигается вовсе.
  */
 .playHint {
+  position: absolute;
+  right: 0;
+  bottom: var(--rc-space-2);
+  left: 0;
   font-family: var(--rc-font-display);
   font-size: var(--rc-text-lg);
   color: color-mix(in srgb, var(--rc-rice) 88%, transparent);
   text-align: center;
   pointer-events: none;
-  animation: hintIn var(--rc-dur-slow) var(--rc-ease-out) 500ms both;
+  opacity: 0;
+  transition:
+    opacity var(--rc-dur-slow) var(--rc-ease-out),
+    transform var(--rc-dur-slow) var(--rc-ease-out);
+  transform: translateY(6px);
+}
+
+.playHintVisible {
+  opacity: 1;
+  transform: none;
+}
+
+/* При открытой панели поле становится ниже подсказки, и та ложится прямо на
+   Рисинку. Гость в этот момент занят улучшениями, а не поиском цели тапа. */
+.playCompact .playHint {
+  opacity: 0;
 }
 
 .playFooter {
@@ -227,21 +246,49 @@
   font-size: clamp(0.8rem, 4.1vw, var(--rc-text-base));
 }
 
+/**
+ * Панель улучшений всегда в разметке, открытие — это переход высоты.
+ *
+ * Раньше она монтировалась по условию: появлялась рывком, исчезала мгновенно,
+ * и Рисинка вместе с ней прыгала на новое место. Теперь высота едет от нуля
+ * к пределу, поле над панелью сжимается плавно, и подъём Рисинки получается
+ * сам собой.
+ *
+ * Пока панель закрыта, она получает `inert` из компонента: нулевая высота с
+ * `overflow: hidden` прячет содержимое от глаз, но не от клавиатуры и не от
+ * скринридера.
+ */
 .sheet {
   position: relative;
   z-index: var(--rc-z-sheet);
   flex-shrink: 0;
-  max-height: 46dvh;
-  padding: var(--rc-space-4);
-  padding-bottom: max(var(--rc-space-4), env(safe-area-inset-bottom));
-  overflow-y: auto;
+  max-height: 0;
+  padding: 0 var(--rc-space-4);
+  overflow: hidden;
   // Восемь улучшений в лист не помещаются, панель прокручивается внутри себя.
   // `contain` не даёт прокрутке дойти до края и потянуть за собой всю страницу.
   overscroll-behavior: contain;
   background: color-mix(in srgb, var(--rc-brown-deep) 72%, transparent);
   border-radius: var(--rc-radius-xl) var(--rc-radius-xl) 0 0;
   box-shadow: 0 -12px 32px rgb(20 8 4 / 45%);
-  animation: slideUp var(--rc-dur-base) var(--rc-ease-out) both;
+  opacity: 0;
+  transition:
+    max-height var(--rc-dur-base) var(--rc-ease-out),
+    padding-block var(--rc-dur-base) var(--rc-ease-out),
+    opacity var(--rc-dur-fast) var(--rc-ease-out),
+    transform var(--rc-dur-base) var(--rc-ease-out);
+  transform: translateY(12px);
+}
+
+.sheetOpen {
+  max-height: 46dvh;
+  padding-top: var(--rc-space-4);
+  padding-bottom: max(var(--rc-space-4), env(safe-area-inset-bottom));
+  /* Прокрутка включается только у открытой панели: у закрытой `hidden`
+     обрезает содержимое, и полоса прокрутки была бы бессмыслицей. */
+  overflow-y: auto;
+  opacity: 1;
+  transform: none;
 }
 
 .sheetHint {
@@ -309,28 +356,6 @@
 
   to {
     opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(16px);
-  }
-
-  to {
-    transform: none;
-  }
-}
-
-@keyframes hintIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
   }
 }
 
