@@ -37,7 +37,17 @@ html {
   text-size-adjust: 100%;
   touch-action: manipulation;
   overscroll-behavior: none;
-  background: var(--rc-play-bg);
+  /**
+   * Цвет и градиент задаются раздельно намеренно.
+   *
+   * Сокращённая запись `background` обнуляет `background-color`, и у холста
+   * оставался только рисунок. Safari на iOS тонирует свои панели сверху и
+   * снизу сплошным цветом фона: брать ему было нечего, и он показывал светло-
+   * серые полосы вокруг тёмной страницы. Сплошной цвет под градиентом эту
+   * проблему снимает и заодно страхует кадр, в котором градиент ещё не лёг.
+   */
+  background-color: var(--rc-brown);
+  background-image: var(--rc-play-bg);
 }
 
 /**
@@ -50,7 +60,8 @@ html {
  * всё равно закрашивает себя целиком.
  */
 html:has([data-surface="legal"]) {
-  background: var(--rc-bg);
+  background-color: var(--rc-bg);
+  background-image: none;
 }
 
 /**
