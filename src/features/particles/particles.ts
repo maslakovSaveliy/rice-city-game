@@ -73,12 +73,42 @@ export function resizeSurface(): void {
   surface.context.setTransform(ratio, 0, 0, ratio, 0, 0);
 }
 
-/** Координаты приходят из события указателя, то есть в системе окна. */
-export function burstAt(clientX: number, clientY: number, value: number, now: number): void {
+/**
+ * Всплеск в координатах окна: событие указателя приходит именно в них,
+ * а холст живёт в своих.
+ *
+ * `spawnRadius` и `scoreClientY` описывают подложку Рисинки — движок про неё
+ * не знает и знать не должен.
+ */
+export interface BurstRequest {
+  readonly clientX: number;
+  readonly clientY: number;
+  readonly value: number;
+  readonly now: number;
+  readonly spawnRadius?: number;
+  readonly scoreClientY?: number;
+}
+
+export function burstAt({
+  clientX,
+  clientY,
+  value,
+  now,
+  spawnRadius,
+  scoreClientY,
+}: BurstRequest): void {
   if (surface === null) {
     return;
   }
-  particleEngine.burst(clientX - surface.rect.left, clientY - surface.rect.top, value, now);
+
+  particleEngine.burst({
+    x: clientX - surface.rect.left,
+    y: clientY - surface.rect.top,
+    value,
+    now,
+    ...(spawnRadius === undefined ? {} : { spawnRadius }),
+    ...(scoreClientY === undefined ? {} : { scoreY: scoreClientY - surface.rect.top }),
+  });
 }
 
 export function renderParticles(now: number): void {
@@ -117,7 +147,9 @@ function drawGrain(context: CanvasRenderingContext2D, particle: Particle, palett
   context.fillStyle = palette.grain;
   context.fill();
 
-  context.lineWidth = 1;
+  // Обводка несёт силуэт там, где заливка совпадает с фоном, поэтому её
+  // толщина растёт вместе с зерном, а не остаётся волосяной на крупных.
+  context.lineWidth = Math.max(1, particle.size * 0.2);
   context.strokeStyle = palette.grainEdge;
   context.stroke();
 
@@ -152,7 +184,15 @@ function readPalette(): Palette {
 
   return {
     grain: token("--rc-rice", "#fbf7ef"),
-    grainEdge: "rgba(68, 34, 25, 0.18)",
+    /**
+     * Обводка зерна — терракота из палитры, а не полупрозрачный коричневый.
+     *
+     * Основную видимость даёт заливка на тёмном поле, но без обводки зёрна
+     * сливаются в белое пятно, когда их полсотни разом. Значение задано
+     * литералом, как и прежде: canvas не понимает `color-mix`, а собирать
+     * альфу из токена строкой — хрупко.
+     */
+    grainEdge: "rgba(149, 70, 30, 0.5)",
     score: token("--rc-orange-bright", "#ff7a24"),
     scoreFont: token("--rc-font-display", "system-ui, sans-serif"),
   };

@@ -20,7 +20,7 @@ function engine(capacity = 64) {
 describe("создание частиц", () => {
   it("тап рождает зёрна и одно число", () => {
     const particles = engine();
-    particles.burst(100, 100, 7, NOW);
+    particles.burst({ x: 100, y: 100, value: 7, now: NOW });
 
     const alive = particles.particles.filter((particle) => particle.active);
     expect(alive.filter((particle) => particle.kind === "grain").length).toBeGreaterThanOrEqual(3);
@@ -29,7 +29,7 @@ describe("создание частиц", () => {
 
   it("число несёт величину награды", () => {
     const particles = engine();
-    particles.burst(0, 0, 42, NOW);
+    particles.burst({ x: 0, y: 0, value: 42, now: NOW });
 
     const score = particles.particles.find((particle) => particle.kind === "score");
     expect(score?.value).toBe(42);
@@ -42,18 +42,55 @@ describe("создание частиц", () => {
 
     // Десять тапов внутри одного окна дросселирования дают одно число.
     for (let index = 0; index < 10; index += 1) {
-      particles.burst(0, 0, 1, NOW + index * 10);
+      particles.burst({ x: 0, y: 0, value: 1, now: NOW + index * 10 });
     }
     expect(scores()).toBe(1);
 
-    // За пределами окна появляется следующее.
-    particles.burst(0, 0, 1, NOW + 400);
-    expect(scores()).toBe(2);
+    // За пределами окна число сменяется, а не добавляется: все «+N» встают
+    // на одну линию и вдвоём превращаются в нечитаемое пятно.
+    particles.burst({ x: 0, y: 0, value: 7, now: NOW + 400 });
+    expect(scores()).toBe(1);
+
+    const score = particles.particles.find(
+      (particle) => particle.active && particle.kind === "score",
+    );
+    expect(score?.value).toBe(7);
+  });
+
+  it("«+N» встаёт на заданную высоту", () => {
+    const particles = engine();
+    // Холст лежит за Рисинкой, поэтому число сажают над её подложкой,
+    // а не в точку касания.
+    particles.burst({ x: 100, y: 400, value: 5, now: NOW, scoreY: 120 });
+
+    const score = particles.particles.find((particle) => particle.kind === "score");
+    expect(score?.y).toBe(120);
+  });
+
+  it("без указанной высоты «+N» встаёт над пальцем", () => {
+    const particles = engine();
+    particles.burst({ x: 100, y: 400, value: 5, now: NOW });
+
+    const score = particles.particles.find((particle) => particle.kind === "score");
+    expect(score?.y).toBeLessThan(400);
+  });
+
+  it("зёрна рождаются на заданном радиусе, а не в точке касания", () => {
+    const particles = engine();
+    const radius = 120;
+    particles.burst({ x: 0, y: 0, value: 1, now: NOW, spawnRadius: radius });
+
+    // Иначе зерно всю жизнь проводит под непрозрачной подложкой Рисинки.
+    for (const particle of particles.particles) {
+      if (particle.active && particle.kind === "grain") {
+        expect(Math.hypot(particle.x, particle.y)).toBeGreaterThan(radius * 0.7);
+      }
+    }
   });
 
   it("зёрна летят вверх", () => {
     const particles = engine();
-    particles.burst(0, 0, 1, NOW);
+    particles.burst({ x: 0, y: 0, value: 1, now: NOW });
 
     for (const particle of particles.particles) {
       if (particle.active && particle.kind === "grain") {
@@ -66,7 +103,7 @@ describe("создание частиц", () => {
 describe("жизненный цикл", () => {
   it("частицы гаснут по истечении срока", () => {
     const particles = engine();
-    particles.burst(0, 0, 1, NOW);
+    particles.burst({ x: 0, y: 0, value: 1, now: NOW });
     expect(particles.activeCount()).toBeGreaterThan(0);
 
     particles.step(NOW);
@@ -79,7 +116,7 @@ describe("жизненный цикл", () => {
 
   it("гравитация тянет зёрна вниз", () => {
     const particles = engine();
-    particles.burst(0, 0, 1, NOW);
+    particles.burst({ x: 0, y: 0, value: 1, now: NOW });
     particles.step(NOW);
 
     const grain = particles.particles.find(
@@ -93,7 +130,7 @@ describe("жизненный цикл", () => {
 
   it("длинная пауза не телепортирует частицы", () => {
     const particles = engine();
-    particles.burst(0, 500, 1, NOW);
+    particles.burst({ x: 0, y: 500, value: 1, now: NOW });
     particles.step(NOW);
 
     const grain = particles.particles.find(
@@ -114,7 +151,7 @@ describe("пул объектов", () => {
     const particles = createParticleEngine({ capacity, random: sequence([0.5]) });
 
     for (let index = 0; index < 200; index += 1) {
-      particles.burst(0, 0, 1, NOW + index * 500);
+      particles.burst({ x: 0, y: 0, value: 1, now: NOW + index * 500 });
     }
 
     expect(particles.particles).toHaveLength(capacity);
@@ -123,7 +160,7 @@ describe("пул объектов", () => {
 
   it("переиспользует слоты после угасания", () => {
     const particles = engine(16);
-    particles.burst(0, 0, 1, NOW);
+    particles.burst({ x: 0, y: 0, value: 1, now: NOW });
     particles.step(NOW);
 
     for (let elapsed = 16; elapsed <= 2_000; elapsed += 16) {
@@ -131,14 +168,14 @@ describe("пул объектов", () => {
     }
     expect(particles.activeCount()).toBe(0);
 
-    particles.burst(0, 0, 1, NOW + 3_000);
+    particles.burst({ x: 0, y: 0, value: 1, now: NOW + 3_000 });
     expect(particles.activeCount()).toBeGreaterThan(0);
     expect(particles.particles).toHaveLength(16);
   });
 
   it("сброс гасит всё разом", () => {
     const particles = engine();
-    particles.burst(0, 0, 1, NOW);
+    particles.burst({ x: 0, y: 0, value: 1, now: NOW });
     particles.clear();
 
     expect(particles.activeCount()).toBe(0);

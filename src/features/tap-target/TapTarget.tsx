@@ -12,6 +12,15 @@ const SQUASH_DURATION_MS = 170;
 const HAPTIC_MS = 8;
 
 /**
+ * На сколько «+N» поднимается над верхней кромкой подложки.
+ *
+ * Холст с частицами лежит за Рисинкой, поэтому у точки касания число было бы
+ * не видно. Стартовая линия чуть выше подложки: число сразу оказывается на
+ * тёмном поле, где оранжевый читается.
+ */
+const SCORE_LIFT_PX = 10;
+
+/**
  * Рисинка — цель тапа.
  *
  * Реакция на `pointerdown`, а не на `click`: клик приходит только после отпускания
@@ -50,7 +59,18 @@ export function TapTarget() {
       squash(mascotRef.current);
       navigator.vibrate?.(HAPTIC_MS);
       soundPlayer.playTap(after.heat / HEAT_MAX);
-      burstAt(event.clientX, event.clientY, after.grains - before.grains, performance.now());
+
+      const plate = mascotRef.current?.getBoundingClientRect();
+      burstAt({
+        clientX: event.clientX,
+        clientY: event.clientY,
+        value: after.grains - before.grains,
+        now: performance.now(),
+        // Зерно должно родиться уже за кромкой подложки, а «+N» — над ней.
+        ...(plate === undefined
+          ? {}
+          : { spawnRadius: plate.width / 2, scoreClientY: plate.top - SCORE_LIFT_PX }),
+      });
     },
     [tap],
   );

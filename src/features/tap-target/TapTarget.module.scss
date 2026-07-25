@@ -13,15 +13,27 @@
   touch-action: none;
 }
 
+/**
+ * Жар комбо — свечение ВОКРУГ подложки, а не под ней.
+ *
+ * Прежде здесь был радиальный градиент с окружностью: цветная часть гасла на
+ * 68% от 260px, то есть радиусом 89px, а непрозрачная подложка занимает 116px
+ * от центра. Свечение целиком лежало под ней и не давало на экране ни одного
+ * оранжевого пикселя ни при каком уровне жара.
+ *
+ * Теперь форма повторяет силуэт подложки, а свет уходит наружу тенью. Заодно
+ * кольцо на минимальной яркости очерчивает зону тапа в покое — детям нужно
+ * видеть, куда бить.
+ */
 .heat {
   position: absolute;
   inset: -6%;
-  background: radial-gradient(
-    circle at 50% 55%,
-    color-mix(in srgb, var(--rc-orange) 38%, transparent) 0%,
-    transparent 68%
-  );
-  border-radius: 50%;
+  /* Чуть мягче, чем 28% у подложки: точное совпадение читается как вторая
+     рамка, а не как ореол. */
+  border-radius: 31%;
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--rc-orange-bright) 78%, transparent),
+    0 0 22px 4px color-mix(in srgb, var(--rc-orange) 60%, transparent);
   transition:
     opacity var(--rc-dur-fast) var(--rc-ease-out),
     transform var(--rc-dur-fast) var(--rc-ease-out);
