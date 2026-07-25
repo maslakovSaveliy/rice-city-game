@@ -23,6 +23,8 @@
   justify-content: center;
   min-height: 0;
   padding: var(--rc-space-6) var(--rc-space-4);
+  /* Запас под уведомление о cookie появляется только пока оно видно. */
+  padding-bottom: calc(var(--rc-space-6) + var(--rc-banner-offset));
   overflow-y: auto;
   text-align: center;
 }
@@ -94,6 +96,22 @@
   max-width: 32ch;
   font-size: var(--rc-text-xs);
   color: color-mix(in srgb, var(--rc-rice) 52%, transparent);
+}
+
+.menuLegal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rc-space-4);
+  justify-content: center;
+  margin-top: var(--rc-space-2);
+}
+
+.menuLegalLink {
+  min-height: var(--rc-tap-min);
+  padding: var(--rc-space-3) 0;
+  font-size: var(--rc-text-xs);
+  color: color-mix(in srgb, var(--rc-rice) 72%, transparent);
+  text-underline-offset: 0.3em;
 }
 
 /* Игровой экран */

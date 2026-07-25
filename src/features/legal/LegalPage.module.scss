@@ -1,0 +1,111 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--rc-bg);
+  color: var(--rc-fg);
+}
+
+.content {
+  width: 100%;
+  max-width: 40rem;
+  padding: var(--rc-space-5) var(--rc-space-4) var(--rc-space-7);
+  padding-top: max(var(--rc-space-5), env(safe-area-inset-top));
+  margin: 0 auto;
+}
+
+.back {
+  display: inline-block;
+  min-height: var(--rc-tap-min);
+  padding: var(--rc-space-3) 0;
+  font-size: var(--rc-text-sm);
+  color: var(--rc-terracotta);
+  text-decoration: none;
+}
+
+.title {
+  margin-top: var(--rc-space-2);
+  font-size: var(--rc-text-2xl);
+}
+
+.summary {
+  margin-top: var(--rc-space-2);
+  color: var(--rc-fg-muted);
+}
+
+.draft {
+  padding: var(--rc-space-3) var(--rc-space-4);
+  margin-top: var(--rc-space-5);
+  font-size: var(--rc-text-sm);
+  background: color-mix(in srgb, var(--rc-orange) 14%, transparent);
+  border-left: 3px solid var(--rc-orange);
+  border-radius: var(--rc-radius-sm);
+}
+
+.section {
+  margin-top: var(--rc-space-6);
+}
+
+.sectionTitle {
+  font-size: var(--rc-text-lg);
+}
+
+.paragraph {
+  margin-top: var(--rc-space-3);
+}
+
+.list {
+  padding-left: var(--rc-space-5);
+  margin-top: var(--rc-space-3);
+
+  li + li {
+    margin-top: var(--rc-space-2);
+  }
+}
+
+.updated {
+  margin-top: var(--rc-space-7);
+  font-size: var(--rc-text-sm);
+  color: var(--rc-fg-muted);
+}
+
+.footer {
+  padding: var(--rc-space-5) var(--rc-space-4);
+  /* Запас снизу под уведомление о cookie: оно закреплено у нижней кромки
+     и иначе накрывало бы реквизиты. */
+  padding-bottom: calc(
+    var(--rc-space-5) + var(--rc-banner-offset) + env(safe-area-inset-bottom)
+  );
+  margin-top: auto;
+  border-top: 1px solid var(--rc-border);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rc-space-3);
+  justify-content: center;
+}
+
+.navLink {
+  min-height: var(--rc-tap-min);
+  padding: var(--rc-space-3) 0;
+  font-size: var(--rc-text-sm);
+  color: var(--rc-terracotta);
+}
+
+.requisites {
+  margin-top: var(--rc-space-4);
+  font-size: var(--rc-text-xs);
+  line-height: 1.7;
+  color: var(--rc-fg-muted);
+  text-align: center;
+}
+
+.age {
+  display: inline-block;
+  padding: 2px var(--rc-space-2);
+  margin-top: var(--rc-space-2);
+  border: 1px solid var(--rc-border);
+  border-radius: var(--rc-radius-sm);
+}

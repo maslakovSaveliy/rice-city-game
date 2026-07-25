@@ -1,0 +1,56 @@
+.root {
+  position: fixed;
+  right: var(--rc-space-3);
+  bottom: var(--rc-space-3);
+  bottom: max(var(--rc-space-3), env(safe-area-inset-bottom));
+  left: var(--rc-space-3);
+  z-index: var(--rc-z-banner);
+  display: flex;
+  gap: var(--rc-space-3);
+  align-items: center;
+  padding: var(--rc-space-3) var(--rc-space-4);
+  color: var(--rc-rice);
+  background: color-mix(in srgb, var(--rc-brown-deep) 94%, transparent);
+  border-radius: var(--rc-radius-lg);
+  box-shadow: var(--rc-shadow-lg);
+  animation: slideIn var(--rc-dur-slow) var(--rc-ease-out) both;
+}
+
+.text {
+  flex: 1;
+  font-size: var(--rc-text-xs);
+  line-height: 1.5;
+}
+
+.link {
+  color: var(--rc-orange-bright);
+  white-space: nowrap;
+}
+
+.button {
+  flex-shrink: 0;
+  min-height: var(--rc-tap-min);
+  padding-inline: var(--rc-space-4);
+  font-family: var(--rc-font-display);
+  font-size: var(--rc-text-sm);
+  font-weight: 700;
+  color: var(--rc-accent-fg);
+  background: var(--rc-orange);
+  border-radius: var(--rc-radius-pill);
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

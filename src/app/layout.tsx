@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { CookieBanner } from "@/features/legal/CookieBanner";
 import { fontVariables } from "@/lib/fonts";
 import "@/styles/global.scss";
 
@@ -32,7 +33,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // Переменные шрифтов вешаются на <html>, а не на <body>: токены в
     // `_tokens.scss` объявлены на `:root`, и с body они бы не разрешились.
     <html lang="ru" className={fontVariables}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <CookieBanner />
+      </body>
     </html>
   );
 }

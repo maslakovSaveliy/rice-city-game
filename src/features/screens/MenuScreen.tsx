@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { ORGANIZER } from "@/features/legal/legal-content";
 import { DISCOUNT_MAX, SESSION_DURATION_MS } from "@/game/constants";
 import { useGameStore } from "@/store/use-game-store";
 import styles from "./screens.module.scss";
@@ -45,6 +47,19 @@ export function MenuScreen() {
 
       <p className={styles.menuFinePrint}>
         Скидку нужно показать официанту до расчёта. Один раз за визит.
+      </p>
+
+      <nav aria-label="Документы" className={styles.menuLegal}>
+        <Link className={styles.menuLegalLink} href="/legal/rules">
+          Правила акции
+        </Link>
+        <Link className={styles.menuLegalLink} href="/legal/privacy">
+          Обработка данных
+        </Link>
+      </nav>
+
+      <p className={styles.menuFinePrint}>
+        {ORGANIZER.name} · {ORGANIZER.ageRating}
       </p>
     </main>
   );

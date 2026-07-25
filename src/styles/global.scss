@@ -26,6 +26,19 @@ html {
   overscroll-behavior: none;
 }
 
+/**
+ * Запас под уведомление о cookie. Баннер закреплён у нижней кромки и накрывал бы
+ * то, что под ним. Он сам выставляет атрибут на `body`, пока виден, — так отступ
+ * появляется ровно на время показа и не остаётся пустотой после закрытия.
+ */
+:root {
+  --rc-banner-offset: 0px;
+}
+
+body[data-cookie-notice="visible"] {
+  --rc-banner-offset: 7rem;
+}
+
 body {
   min-height: 100dvh;
   margin: 0;
