@@ -163,14 +163,37 @@
  * поверх её лица. Теперь они уходят за подложку и появляются, только вылетев
  * наружу, — как рис, подброшенный из-за спины.
  */
+/**
+ * Рисинка прижата к низу поля, а не висит в его центре.
+ *
+ * Так у неё появляется опора, а весь свободный воздух собирается сверху —
+ * ровно там, где летят зёрна и всплывает «+N». При центрировании пустота
+ * делилась поровну сверху и снизу и не работала ни на что.
+ */
 .playField {
   position: relative;
   z-index: var(--rc-z-field);
   display: grid;
   flex: 1;
-  place-items: center;
+  grid-auto-rows: min-content;
+  gap: var(--rc-space-4);
+  align-content: end;
+  justify-items: center;
   min-height: 0;
-  padding: var(--rc-space-4);
+  padding: var(--rc-space-4) var(--rc-space-4) var(--rc-space-6);
+}
+
+/**
+ * Подсказка до первого тапа. Живёт в потоке, а не поверх: иначе она
+ * наезжала бы на Рисинку на низких экранах.
+ */
+.playHint {
+  font-family: var(--rc-font-display);
+  font-size: var(--rc-text-lg);
+  color: color-mix(in srgb, var(--rc-rice) 88%, transparent);
+  text-align: center;
+  pointer-events: none;
+  animation: hintIn var(--rc-dur-slow) var(--rc-ease-out) 500ms both;
 }
 
 .playFooter {
@@ -183,8 +206,25 @@
   gap: var(--rc-space-2);
   align-items: center;
   justify-content: center;
-  padding: var(--rc-space-4) var(--rc-space-3);
+  padding: var(--rc-space-4) var(--rc-space-2);
   padding-bottom: max(var(--rc-space-4), env(safe-area-inset-bottom));
+}
+
+/**
+ * На 320px футер не помещался: содержимое требовало 356px в коробке 320.
+ * Кнопка звука уезжала за левый край на 36px, «Завершить» обрезалась справа —
+ * `justify-content: center` при переполнении растит вылет в обе стороны.
+ *
+ * Unbounded очень широкий, поэтому ужимаются и подпись, и поля. Высота цели
+ * касания не трогается: её держит `min-height` в самой кнопке.
+ *
+ * Кнопка звука исключена намеренно — она первая в футере, размер ей задаёт
+ * собственный модуль, и перебивать его отсюда значило бы чинить один компонент
+ * из чужого файла.
+ */
+.playFooter > button:not(:first-child) {
+  padding-inline: clamp(var(--rc-space-2), 3.4vw, var(--rc-space-5));
+  font-size: clamp(0.8rem, 4.1vw, var(--rc-text-base));
 }
 
 .sheet {
@@ -278,6 +318,18 @@
   }
 
   to {
+    transform: none;
+  }
+}
+
+@keyframes hintIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
     transform: none;
   }
 }

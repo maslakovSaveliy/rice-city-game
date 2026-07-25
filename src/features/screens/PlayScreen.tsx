@@ -17,6 +17,7 @@ export function PlayScreen() {
   const [confirmingFinish, setConfirmingFinish] = useState(false);
   const finish = useGameStore((state) => state.finish);
   const percent = useGameStore((state) => discountFromGrains(state.local?.grains ?? 0));
+  const untouched = useGameStore((state) => (state.local?.taps ?? 0) === 0);
 
   return (
     // При открытой панели улучшений Рисинке остаётся меньше высоты, поэтому
@@ -28,6 +29,9 @@ export function PlayScreen() {
 
       <div className={styles.playField}>
         <TapTarget />
+        {/* Первое, чего игре не хватало: она нигде не говорила, что надо
+            делать. Подсказка уходит с первым же тапом. */}
+        {untouched && <p className={styles.playHint}>Тапай Рисинку</p>}
       </div>
 
       <footer className={styles.playFooter}>

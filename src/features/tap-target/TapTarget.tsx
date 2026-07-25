@@ -32,6 +32,9 @@ const SCORE_LIFT_PX = 10;
 export function TapTarget() {
   const mascotRef = useRef<HTMLDivElement>(null);
   const tap = useGameStore((state) => state.tap);
+  // Селектор отдаёт булево, а не объект: производные величины на объектах
+  // ломают кеш снимка в zustand.
+  const untouched = useGameStore((state) => (state.local?.taps ?? 0) === 0);
 
   useEffect(() => {
     // iOS Safari игнорирует `user-scalable=no`, поэтому щипок гасится вручную.
@@ -84,7 +87,10 @@ export function TapTarget() {
       type="button"
     >
       <HeatRing />
-      <div className={styles.mascot} ref={mascotRef}>
+      <div
+        className={untouched ? `${styles.mascot} ${styles.idle}` : styles.mascot}
+        ref={mascotRef}
+      >
         <Image
           alt="Рисинка"
           className={styles.image}
