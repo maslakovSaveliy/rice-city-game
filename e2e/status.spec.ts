@@ -32,7 +32,7 @@ test("страница загрузилась, а API недоступен — �
   await page.route("**/api/session", (route) => route.abort("connectionfailed"));
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Нет связи");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Игра не загрузилась");
   const retry = page.getByRole("button", { name: "Повторить" });
   await expect(retry).toBeVisible();
 

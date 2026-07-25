@@ -27,6 +27,27 @@ test("отдаются заголовки безопасности", async ({ pa
   expect(headers["x-powered-by"]).toBeUndefined();
 });
 
+/**
+ * Главный экран не прокручивается — требование продукта. Проверяется на самом
+ * тесном реальном телефоне: если помещается там, поместится везде.
+ */
+test("главный экран помещается целиком и не прокручивается", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Играть" })).toBeVisible();
+
+  const overflow = await page.evaluate(() => {
+    const menu = document.querySelector('main[class*="menu"]');
+    return {
+      menu: menu ? menu.scrollHeight - menu.clientHeight : -1,
+      document: document.documentElement.scrollHeight - document.documentElement.clientHeight,
+    };
+  });
+
+  expect(overflow.menu).toBeLessThanOrEqual(0);
+  expect(overflow.document).toBeLessThanOrEqual(0);
+});
+
 test("страница не прокручивается по горизонтали", async ({ page }) => {
   await page.goto("/");
 

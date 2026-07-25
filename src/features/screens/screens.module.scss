@@ -25,16 +25,34 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--rc-space-3);
+  /* Промежутки и отступы сжимаются вместе с высотой экрана: на 320×568
+     фиксированные значения выталкивали кнопку за пределы вьюпорта. */
+  gap: clamp(var(--rc-space-2), 1.4dvh, var(--rc-space-3));
   align-items: center;
   /* `safe center` вместо `center`: при обычном центрировании содержимое,
      не влезающее по высоте, обрезается сверху и туда невозможно прокрутить.
      На узких экранах так пропадала верхушка логотипа. */
   justify-content: safe center;
   min-height: 0;
-  padding: var(--rc-space-6) var(--rc-space-4);
-  overflow-y: auto;
+  padding: clamp(var(--rc-space-4), 3dvh, var(--rc-space-6)) var(--rc-space-4);
   text-align: center;
+}
+
+/**
+ * Главный экран не прокручивается — это требование продукта.
+ *
+ * Значит, содержимое обязано помещаться всегда: маскот и логотип ограничены
+ * не только шириной, но и высотой вьюпорта, а текст сокращён. Прокрутка
+ * осталась у результата и фиксации — там содержимого больше и обрезать его
+ * было бы хуже, чем прокрутить.
+ */
+.menu {
+  overflow: hidden;
+}
+
+.result,
+.fixed {
+  overflow-y: auto;
 }
 
 .noticeText {
@@ -60,7 +78,9 @@
 }
 
 .wordmark {
-  font-size: clamp(2rem, 12vw, 4.5rem);
+  /* Предел по высоте вьюпорта наравне с шириной: на низких экранах логотип
+     иначе съедает место у кнопки. */
+  font-size: min(12vw, 4.5rem, 9dvh);
   color: var(--rc-rice);
 }
 
@@ -71,7 +91,9 @@
 /* Та же кремовая подложка, что на игровом экране: у исходника Рисинки
    фон не прозрачный. Подробнее — в TapTarget.module.scss. */
 .menuMascot {
-  width: min(58vw, 260px);
+  /* Третий предел — по высоте вьюпорта: на низких экранах маскот иначе
+     не оставляет места кнопке. */
+  width: min(58vw, 260px, 30dvh);
   height: auto;
   background: var(--rc-rice);
   border-radius: 28%;
@@ -82,7 +104,7 @@
 
 .script {
   font-family: var(--rc-font-script);
-  font-size: var(--rc-text-xl);
+  font-size: min(var(--rc-text-xl), 4.2dvh);
   color: var(--rc-orange-bright);
 }
 

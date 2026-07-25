@@ -303,6 +303,44 @@ describe("события сети", () => {
   });
 });
 
+describe("отказ на старте", () => {
+  it("не оставляет гостя на бесконечной загрузке", async () => {
+    // Сервер может отказать и без обрыва связи — например, ограничителем.
+    server.fail(new SessionApiError(429, "Слишком много новых игр с этого адреса.", 2_000));
+    await store.getState().init();
+
+    // Состояния нет, значит показывать «подождите» негде: нужен экран с повтором.
+    expect(store.getState().local).toBeNull();
+    expect(store.getState().status).toBe("offline");
+    expect(store.getState().error).toContain("Слишком много");
+  });
+
+  it("повтор после отказа поднимает игру", async () => {
+    server.fail(new SessionApiError(429, "Слишком часто", 1_000));
+    await store.getState().init();
+    expect(store.getState().status).toBe("offline");
+
+    server.recover();
+    await store.getState().init();
+
+    expect(store.getState().status).toBe("ready");
+    expect(store.getState().local?.phase).toBe("idle");
+  });
+
+  it("во время игры отказ не выбивает на экран загрузки", async () => {
+    await started();
+    store.getState().tap();
+
+    server.fail(new SessionApiError(429, "Слишком часто", 1_000));
+    advanceClock(2_000);
+    await store.getState().flush();
+
+    // Состояние уже есть — играть можно дальше, экран менять незачем.
+    expect(store.getState().status).toBe("ready");
+    expect(store.getState().local).not.toBeNull();
+  });
+});
+
 describe("потеря сессии", () => {
   it("переводит стор в состояние «нужно обновить страницу»", async () => {
     await started();

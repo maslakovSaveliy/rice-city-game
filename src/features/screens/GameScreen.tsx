@@ -22,6 +22,7 @@ export function GameScreen() {
 
   const status = useGameStore((state) => state.status);
   const phase = useGameStore((state) => state.local?.phase ?? null);
+  const error = useGameStore((state) => state.error);
   const init = useGameStore((state) => state.init);
 
   if (status === "lost") {
@@ -39,7 +40,8 @@ export function GameScreen() {
     );
   }
 
-  // Связи нет и загрузиться не удалось: играть не во что, нужен повтор.
+  // Загрузиться не удалось: играть не во что, нужен повтор. Причина может быть
+  // и в связи, и в отказе сервера — сообщение берём от него, если оно есть.
   if (phase === null && status === "offline") {
     return (
       <StatusScreen
@@ -48,8 +50,8 @@ export function GameScreen() {
             Повторить
           </Button>
         }
-        description="Игра не смогла загрузиться. Проверьте подключение и попробуйте ещё раз."
-        title="Нет связи"
+        description={error ?? "Игра не смогла загрузиться. Попробуйте ещё раз."}
+        title="Игра не загрузилась"
         tone="trouble"
       />
     );

@@ -84,10 +84,17 @@ export function createGameStore({ api, now }: GameStoreDeps) {
     };
 
     const handleFailure = (cause: unknown): void => {
-      const { inFlightTaps, pendingTaps } = get();
+      const { inFlightTaps, pendingTaps, local } = get();
       // Отправленные тапы возвращаются в очередь: запрос не дошёл, значит они
       // ещё не учтены сервером.
       const restored = { pendingTaps: pendingTaps + inFlightTaps, inFlightTaps: 0 };
+
+      /**
+       * Пока состояния нет, любая ошибка — тупик: экран навсегда застревает
+       * на «Готовим рис». В этом случае показываем экран с повтором, а не
+       * молча ждём следующей синхронизации.
+       */
+      const blocked = local === null;
 
       if (cause instanceof SessionApiError) {
         if (cause.sessionLost) {
@@ -97,12 +104,13 @@ export function createGameStore({ api, now }: GameStoreDeps) {
         if (cause.throttled) {
           set({
             ...restored,
-            status: "ready",
+            status: blocked ? "offline" : "ready",
+            error: cause.message,
             throttledUntil: serverNow() + Math.max(cause.retryAfterMs, 1_000),
           });
           return;
         }
-        set({ ...restored, status: "ready", error: cause.message });
+        set({ ...restored, status: blocked ? "offline" : "ready", error: cause.message });
         return;
       }
 

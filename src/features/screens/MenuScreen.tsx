@@ -10,9 +10,12 @@ import styles from "./screens.module.scss";
 
 const MINUTES = SESSION_DURATION_MS / 60_000;
 
+/**
+ * Коротко: главный экран не должен прокручиваться, а на 320×568 каждая
+ * лишняя строка выталкивает кнопку за пределы экрана.
+ */
 const RULES_TEXT =
-  `Тапай Рисинку и копи зёрна. Чем больше зёрен, тем больше скидка на счёт — ` +
-  `до ${DISCOUNT_MAX}%. На игру есть ${MINUTES} минут.`;
+  `Тапай Рисинку и копи зёрна — до ${DISCOUNT_MAX}% скидки на счёт. ` + `На игру ${MINUTES} минут.`;
 
 export function MenuScreen() {
   const start = useGameStore((state) => state.start);
@@ -46,9 +49,7 @@ export function MenuScreen() {
         {attempts > 0 ? "Играть снова" : "Играть"}
       </Button>
 
-      <p className={styles.menuFinePrint}>
-        Скидку нужно показать официанту до расчёта. Один раз за визит.
-      </p>
+      <p className={styles.menuFinePrint}>Покажи скидку официанту до расчёта</p>
 
       <nav aria-label="Документы" className={styles.menuLegal}>
         <Link className={styles.menuLegalLink} href="/legal/rules">
