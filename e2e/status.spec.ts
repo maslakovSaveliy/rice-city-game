@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 /**
  * Тупиковые состояния: 404 и отсутствие связи.
@@ -42,16 +42,31 @@ test("страница загрузилась, а API недоступен — �
   await expect(page.getByRole("button", { name: "Играть" })).toBeVisible();
 });
 
+/**
+ * Ждёт настоящую успешную отправку тапов. Фиксированные паузы здесь плавают:
+ * под полной нагрузкой окно синхронизации не всегда успевает закрыться.
+ */
+function waitForSync(page: Page): Promise<unknown> {
+  return page.waitForResponse(
+    (response) =>
+      response.url().includes("/api/session") &&
+      response.request().method() === "POST" &&
+      response.ok(),
+  );
+}
+
 test("обрыв связи в игре не мешает тапать, прогресс догоняет", async ({ page, context }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Играть" }).tap();
 
   const target = page.getByRole("button", { name: "Тапнуть по Рисинке" });
   const grains = page.locator('[class*="GrainCounter"] [class*="value"]');
+  const readGrains = async () => Number((await grains.innerText()).replace(/\s/g, ""));
 
+  const firstSync = waitForSync(page);
   await target.tap();
-  await page.waitForTimeout(2_500);
-  const synced = Number((await grains.innerText()).replace(/\s/g, ""));
+  await firstSync;
+  const synced = await readGrains();
 
   await context.setOffline(true);
   await expect(page.getByText(/Нет связи/)).toBeVisible();
@@ -60,16 +75,16 @@ test("обрыв связи в игре не мешает тапать, прог
   for (let index = 0; index < 10; index += 1) {
     await target.tap();
   }
-  const offlineTotal = Number((await grains.innerText()).replace(/\s/g, ""));
+  const offlineTotal = await readGrains();
   expect(offlineTotal).toBeGreaterThan(synced);
 
   // Связь вернулась — очередь уходит на сервер, а не теряется.
+  const resync = waitForSync(page);
   await context.setOffline(false);
-  await page.waitForTimeout(3_000);
+  await resync;
   await expect(page.getByText(/Нет связи/)).toBeHidden();
 
   await page.reload();
   await expect(target).toBeVisible();
-  const afterReload = Number((await grains.innerText()).replace(/\s/g, ""));
-  expect(afterReload).toBeGreaterThanOrEqual(offlineTotal);
+  expect(await readGrains()).toBeGreaterThanOrEqual(offlineTotal);
 });
