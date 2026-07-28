@@ -4,19 +4,26 @@ import { PERSONAS, type Persona, simulate } from "./simulator";
 
 /**
  * Балансировочные тесты. Это не проверка кода, а проверка ЭКОНОМИКИ:
- * если константы уедут, средний гость перестанет попадать в 11–15% и тест упадёт.
+ * если константы уедут, средний гость перестанет попадать в 10–13% и тест упадёт.
  * Менять коридоры можно только вместе с продуктовым решением.
+ *
+ * При потолке 15% три верхние персоны его достигают, и коридоры у них упираются
+ * в максимум. Это не небрежность, а прямое следствие продуктового решения: см.
+ * комментарий к `DISCOUNT_MAX`.
  */
 
 const BANDS: Record<string, readonly [number, number]> = {
-  "kid-casual": [4, 8],
-  "average-guest": [11, 15],
-  "kid-engaged": [15, 19],
-  "kid-hooked": [18, 22],
-  "adult-max": [19, 23],
-  autoclicker: [22, 26],
-  idler: [4, 8],
+  "kid-casual": [3, 6],
+  "average-guest": [10, 13],
+  "kid-engaged": [13, 15],
+  "kid-hooked": [14, DISCOUNT_MAX],
+  "adult-max": [14, DISCOUNT_MAX],
+  autoclicker: [14, DISCOUNT_MAX],
+  idler: [4, 7],
 };
+
+/** Персоны, которые обязаны упираться в потолок. Меньше — экономика уехала. */
+const REACH_THE_CAP = ["kid-hooked", "adult-max", "autoclicker"] as const;
 
 describe("баланс экономики по персонам", () => {
   for (const persona of PERSONAS) {
@@ -41,9 +48,26 @@ describe("баланс экономики по персонам", () => {
 });
 
 describe("потолок скидки", () => {
-  it("ни одна персона не пробивает 30%", () => {
+  it("ни одна персона не пробивает потолок", () => {
     for (const persona of PERSONAS) {
       expect(simulate(persona).discount).toBeLessThanOrEqual(DISCOUNT_MAX);
+    }
+  });
+
+  /**
+   * Обратная сторона того же решения. Потолок теперь достижим, и если правка
+   * констант отодвинет его от самых упорных персон, гость с автокликером
+   * снова получит преимущество над играющим руками.
+   */
+  it("самые упорные персоны потолка достигают", () => {
+    for (const id of REACH_THE_CAP) {
+      const persona = PERSONAS.find((item) => item.id === id);
+      expect(persona, `персона ${id} исчезла из набора`).toBeDefined();
+      if (persona) {
+        expect(simulate(persona).discount, `${persona.label} не дошёл до потолка`).toBe(
+          DISCOUNT_MAX,
+        );
+      }
     }
   });
 

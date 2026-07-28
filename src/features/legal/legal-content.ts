@@ -16,7 +16,7 @@ import { DISCOUNT_MAX, FIX_LOCK_MS, SESSION_DURATION_MS } from "@/game/constants
 export const LEGAL_TEXTS_APPROVED = false;
 
 /** Дата последнего изменения текстов. Обновлять вручную вместе с правками. */
-export const LEGAL_UPDATED_AT = "2026-07-25";
+export const LEGAL_UPDATED_AT = "2026-07-28";
 
 export const ORGANIZER = {
   name: "ООО «Ортус Азия»",

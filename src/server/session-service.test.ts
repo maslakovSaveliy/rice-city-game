@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   BASE_TAP_VALUE,
+  DISCOUNT_MAX,
   MAX_TAPS_PER_BATCH,
   SESSION_DURATION_MS,
   SYNC_INTERVAL_MS,
@@ -89,7 +90,7 @@ describe("серверный подсчёт тапов", () => {
     }
 
     const view = await readSession(db, id, NOW + SYNC_INTERVAL_MS * 200);
-    expect(view?.discount).toBeLessThanOrEqual(30);
+    expect(view?.discount).toBeLessThanOrEqual(DISCOUNT_MAX);
   });
 
   it("пачка через границу часа закрывает сессию и остаётся ограниченной", async () => {

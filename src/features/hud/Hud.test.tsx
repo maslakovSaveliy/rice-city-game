@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
+import { DISCOUNT_MAX } from "@/game/constants";
 import { grainsForDiscount } from "@/game/economy";
 import { startSession } from "@/game/reducer";
 import { createInitialState } from "@/game/session";
@@ -61,11 +62,13 @@ describe("Hud", () => {
   });
 
   it("на потолке сообщает о максимуме вместо следующего процента", () => {
-    setPlaying({ grains: grainsForDiscount(30) });
+    // Через константу, а не литералом: с захардкоженным числом тест отставал
+    // от экономики и падал на первой же правке потолка.
+    setPlaying({ grains: grainsForDiscount(DISCOUNT_MAX) });
     render(<Hud />);
 
     expect(screen.getByText("Максимум достигнут")).toBeInTheDocument();
-    expect(screen.getByText("30%")).toBeInTheDocument();
+    expect(screen.getByText(`${DISCOUNT_MAX}%`)).toBeInTheDocument();
   });
 
   it("счётчик зёрен обновляется вслед за состоянием", async () => {
